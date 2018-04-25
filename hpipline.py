@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
+import sys
+# Python path for the cluster
+sys.path.append("/software/gfilion/seeq/")
+sys.path.append("/software/gfilion/gzopen/")
 
-# Standard library packages.
+ # Standard library packages.
 import os
+import pickle
 import re
 import subprocess
-import sys
 import tempfile
 
 from collections import defaultdict
@@ -15,7 +19,7 @@ from itertools import izip
 import seeq
 
 from gzopen import gzopen
-from vtrack import vheader
+
 
 LOGFNAME = 'hpiplog.txt'
 
@@ -24,25 +28,7 @@ class FormatException(Exception):
     pass
 
 
-# Generation of Promoter-barcode association table ######
-
-
-def read_association_table(picklefname):
-    pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Mapping Pipeline ###############################################
+# Mapping Pipeline on the cluster ##########################################
 
 
 def extract_reads_from_PE_fastq(fname_iPCR_PE1, fname_iPCR_PE2):
@@ -61,7 +47,8 @@ def extract_reads_from_PE_fastq(fname_iPCR_PE1, fname_iPCR_PE2):
     pT2 = seeq.compile('TGTATGTAAACTTCCGACTTCAACTGTA', 5)
 
     # Open a file to write
-    fname_fasta = re.sub(r'[\_F][w\_].fastq(\.gz)?', 'iPCR.fasta',
+    fname_fasta = re.sub(r'[A-Za-z]+_iPCR_([\w]+)_[a-zA-Z0-9]+.fastq',
+                         r'iPCR_\1.fasta',
                          fname_iPCR_PE1)
 
     # Substitution failed, append '.fasta' to avoid name collision.
@@ -104,7 +91,7 @@ def call_bwa_mapper_on_fasta_file(fname_fasta):
     sequencing files and calls bwa-mem to do the mapping with default
     settings to the Drosophila R6 reference genome"""
 
-    INDEX = '/mnt/shared/seq/bwa/dm4R6/dmel-all-chromosome-r6.15.fasta'
+    INDEX = '/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta'
 
     outfname_mapped = re.sub(r'\.fasta', '.sam', fname_fasta)
 
@@ -243,6 +230,11 @@ def call_starcode_on_fastq_file(fname_fastq):
 
     return (brcd_outfname, spk_outfname)
 
+# Read Promoter-barcode association table #########################
+
+
+#bcd_promd = pickle.load(open("prom_bcd.d", "rb"))
+
 
 # Generate expression table #######################################
 
@@ -325,14 +317,13 @@ def collect_integrations(fname_starcode_out, fname_mapped, *args):
                 except (IndexError, ValueError) as ex:
                     raise FormatException("Input file with wrong format")
     with open(fname_insertions_table, 'w') as outf:
-        outf.write(vheader(*sys.argv))
         unmapped = 0
         mapped = 0
         for brcd in sorted(integrations, key=lambda x:
                            (integrations.get(x), x)):
             (chrom, pos, strand), total = integrations[brcd]
             mapped += 1
-            outf.write('%s\t%s\t%s\t%d\t%d' %
+            outf.write('%s\t%s\t%s\t%d\t%d\n' %
                        (brcd, chrom, strand, pos, total))
         for fname, ignore in args:
             outf.write('\t' + str(reads[fname][brcd]))
@@ -366,3 +357,7 @@ def main(fname_fastq1, fname_fastq2, *args):
     fname_starcode = call_starcode_on_filtered_file(fname_filtered)
     fnames_extra = [call_starcode_on_fastq_file(fname) for fname in args]
     collect_integrations(fname_starcode, fname_mapped, *fnames_extra)
+
+
+if __name__ == '__main__':
+    main(sys.argv[1], sys.argv[2], *sys.argv[3:])
