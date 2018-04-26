@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-import sys
+
 # Python path for the cluster
+import sys
 sys.path.append("/software/gfilion/seeq/")
 sys.path.append("/software/gfilion/gzopen/")
 
@@ -44,7 +45,6 @@ def extract_reads_from_PE_fastq(fname_iPCR_PE1, fname_iPCR_PE2):
     # corresponds to a 34 bp sequence ending as shown below. We allow
     # up to 5 mismatches/indels. On the forward read, the only known
     # sequence is the CATG after the barcode, which is matched exactly.
-    pT2 = seeq.compile('TGTATGTAAACTTCCGACTTCAACTGTA', 5)
 
     # Open a file to write
     fname_fasta = re.sub(r'[A-Za-z]+_iPCR_([\w]+)_[a-zA-Z0-9]+.fastq',
@@ -66,19 +66,11 @@ def extract_reads_from_PE_fastq(fname_iPCR_PE1, fname_iPCR_PE2):
             # Take sequence only.
             if lineno % 4 != 1:
                 continue
-            # Split on "CATG" and take the first fragment.
-            # In case there is no "CATG", the barcode will be rejected
-            # for being too long.
-            brcd = line1.rstrip().split('CATG')[0]
+            brcd = line1[:20]
             if not MIN_BRCD < len(brcd) < MAX_BRCD:
                 continue
-            # Use a Levenshtein automaton to find the transpsoson.
-            genome = pT2.matchSuffix(line2, False)
-            if not genome:
-                continue
-            # Select the region from the end of the transposon to
-            # the first "CATG", if any.
-            genome = genome.split('CATG')[0].rstrip()
+            # Lets relie on bwa mapping results to decide
+            genome = line2.rstrip()
             if len(genome) < MIN_GENOME:
                 continue
             outf.write('>%s\n%s\n' % (brcd, genome))
@@ -101,7 +93,7 @@ def call_bwa_mapper_on_fasta_file(fname_fasta):
 
     # System call to `bwa mem` with arguments and check the exit code.
     with open(outfname_mapped, 'w') as f:
-        map_process = subprocess.Popen(['bwa', 'mem', '-t4', INDEX,
+        map_process = subprocess.Popen(['bwa', 'mem', '-t4','-L0,0', INDEX,
                                         fname_fasta], stdout=f).wait()
         if int(map_process) < 0:
             sys.stderr.write("Error during the mapping\n")
@@ -139,28 +131,20 @@ def call_starcode_on_filtered_file(fname_filtered):
     if fname_filtered == fname_starcode:
         fname_starcode = fname_filtered + '_starcode.txt'
 
-    # Skip if file exists.
+    # Call starcode (qsub-it?)
     if os.path.exists(fname_starcode):
         return fname_starcode
+    starcode_process = subprocess.call([
+          'starcode',
+          '-t4',
+          '-i', fname_filtered,
+          '-o', fname_starcode,
+          ]).wait()
+    
+    if int(starcode_process) < 0:
+            sys.stderr.write("Error during Starcode call on: %s\n"
+                             % fname_starcode)
 
-    # Create a pipe to make use of the `cut` command and pipe
-    # it to starcode (git commit d4f63bd0cc5355d...).
-    p1 = subprocess.Popen(['cut', '-f1', fname_filtered],
-                          stdout=subprocess.PIPE)
-    p2 = subprocess.Popen([
-       'starcode',
-       '-t4',
-       '-d2',
-       '--print-clusters',
-       '-o',
-       fname_starcode],
-       stdin=p1.stdout,
-       stdout=subprocess.PIPE)
-    # 'communicate()' returns a tuple '(stdoutdata, stderrdata)'.
-    # If 'stderrdata' is not None we notify to know where the problem arose.
-    stdoutdata, stderrdata = p2.communicate()
-    if stderrdata is not None:
-        sys.stderr.write("Pipe error (%s)\n" % str(stderrdata))
     return fname_starcode
 
 
@@ -182,7 +166,6 @@ def call_starcode_on_fastq_file(fname_fastq):
     if os.path.exists(brcd_outfname) and os.path.exists(spk_outfname):
         return (brcd_outfname, spk_outfname)
 
-    GFP = seeq.compile('CATGCTAGTTGTGGTTTGTCCAAACT', 4)
     SPIKE = seeq.compile('CATGATTACCCTGTTATC', 2)
     barcode_tempf = tempfile.NamedTemporaryFile(delete=False)
     spike_tempf = tempfile.NamedTemporaryFile(delete=False)
@@ -191,38 +174,42 @@ def call_starcode_on_fastq_file(fname_fastq):
         for lineno, line in enumerate(f):
             if lineno % 4 != 1:
                 continue
-            hit = GFP.match(line)
-            if hit is not None:
-                outf = barcode_tempf
+            spike = SPIKE.match(line)
+            if spike is not None:
+                outf = spike_tempf
+                outf.write(line[:spike.matchlist[0][0]] + '\n')
             else:
-                hit = SPIKE.match(line)
-                if hit is not None:
-                    outf = spike_tempf
-                else:
-                    continue
-            pos = hit.matchlist[0][0]
-            if MIN_BRCD <= pos <= MAX_BRCD:
-                outf.write(line[:pos] + '\n')
+                outf = barcode_tempf
+                outf.write(line[:20] + '\n')
+
     barcode_tempf.close()
     spike_tempf.close()
 
     # Skip if file exists.
     if not os.path.exists(brcd_outfname):
         # Call `starcode`.
-        subprocess.call([
+        starcode_process = subprocess.call([
           'starcode',
           '-t4',
           '-i', barcode_tempf.name,
           '-o', brcd_outfname,
-          ])
+          ]).wait()
+
+        if int(starcode_process) < 0:
+            sys.stderr.write("Error during Starcode call on: %s\n"
+                             % barcode_tempf.name)
 
     if not os.path.exists(spk_outfname):
-        subprocess.call([
-          'starcode',
-          '-t4',
-          '-i', spike_tempf.name,
-          '-o', spk_outfname,
-         ])
+        starcode_process = subprocess.call([
+            'starcode',
+            '-t4',
+            '-i', spike_tempf.name,
+            '-o', spk_outfname,
+        ]).wait()
+
+        if int(starcode_process) < 0:
+            sys.stderr.write("Error during Starcode call on: %s\n"
+                             % spk_outfname)
 
     # Delete temporary files.
     os.unlink(barcode_tempf.name)
@@ -232,8 +219,8 @@ def call_starcode_on_fastq_file(fname_fastq):
 
 # Read Promoter-barcode association table #########################
 
-
-#bcd_promd = pickle.load(open("prom_bcd.d", "rb"))
+pickle_path = "/users/gfilion/mcorrales/HPIP/libraries"
+bcd_promd = pickle.load(open("/".join([pickle_path,"prom_bcd.d"], "rb"))
 
 
 # Generate expression table #######################################
@@ -287,11 +274,17 @@ def collect_integrations(fname_starcode_out, fname_mapped, *args):
                 position = ('', 0)
             else:
                 # GTTACATCGGTTAATAGATA 16  2L  9743332 60  9S32M [...]
+                try:
+                    # Use dictionary associates barcodes to promoters
+                    # from the library sequencing.
+                    promoter = bcd_promd[barcode]
+                except KeyError:
+                    continue
                 strand = '-' if int(items[1]) & ISREV else '+'
                 chrom = items[2]
                 pos = int(items[3])
-                position = (chrom, pos, strand)
-                counts[barcode][position] += 1
+                ident = (chrom, pos, strand, promoter)
+                counts[barcode][ident] += 1
 
     integrations = dict()
     for brcd, hist in counts.items():
@@ -321,10 +314,10 @@ def collect_integrations(fname_starcode_out, fname_mapped, *args):
         mapped = 0
         for brcd in sorted(integrations, key=lambda x:
                            (integrations.get(x), x)):
-            (chrom, pos, strand), total = integrations[brcd]
+            (chrom, pos, strand, promoter), total = integrations[brcd]
             mapped += 1
-            outf.write('%s\t%s\t%s\t%d\t%d\n' %
-                       (brcd, chrom, strand, pos, total))
+            outf.write('%s\t%s\t%s\t%d\t%d\t%s\n' %
+                       (brcd, chrom, strand, pos, total, promoter))
         for fname, ignore in args:
             outf.write('\t' + str(reads[fname][brcd]))
             outf.write('\n')
