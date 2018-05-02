@@ -6,7 +6,7 @@ import sys
 sys.path.append("/software/gfilion/seeq/")
 sys.path.append("/software/gfilion/gzopen/")
 
-# Standard library packages.
+ # Standard library packages.
 import os
 import pickle
 import re
