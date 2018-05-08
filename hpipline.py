@@ -157,6 +157,7 @@ def call_starcode_on_filtered_file(fname_filtered):
     starcode_process = subprocess.call([
           'starcode',
           '-t4',
+          '--print-clusters',
           '-i', fname_filtered,
           '-o', fname_starcode,
           ])
@@ -248,7 +249,7 @@ def collect_integrations(fname_starcode_out, fname_mapped, fname_bcd_dictionary,
     even for the non-mapping barcodes."""
 
     # First, open the barcode-promoter dictionary
-    bcd_promd = pickle.load(open(fname_bcd_dictionary), "rb")
+    bcd_promd = pickle.load(open(fname_bcd_dictionary, "rb"))
 
     fname_insertions_table = re.sub(r'\.sam', '_insertions.txt',
                                     fname_mapped)
