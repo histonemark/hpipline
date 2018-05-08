@@ -238,21 +238,18 @@ def call_starcode_on_fastq_file(fname_fastq):
 
     return (brcd_outfname, spk_outfname)
 
-# Read Promoter-barcode association table #########################
-
-pickle_path = "/users/gfilion/mcorrales/HPIP/libraries"
-bcd_promd = pickle.load(open("/".join([pickle_path,"prom_bcd.d"]), "rb"))
-
-
 # Generate expression table #######################################
 
 
-def collect_integrations(fname_starcode_out, fname_mapped, *args):
+def collect_integrations(fname_starcode_out, fname_mapped, fname_bcd_dictionary, *args):
     """This function reads the starcode output and changes all the barcodes
     mapped by their canonicals while it calculates the mapped distance
     rejecting multiple mapping integrations or unmmaped ones. It also
     counts the frequency that each barcode is found in the mapped data
     even for the non-mapping barcodes."""
+
+    # First, open the barcode-promoter dictionary
+    bcd_promd = pickle.load(open(fname_bcd_dictionary), "rb")
 
     fname_insertions_table = re.sub(r'\.sam', '_insertions.txt',
                                     fname_mapped)
@@ -364,14 +361,14 @@ def collect_integrations(fname_starcode_out, fname_mapped, *args):
     # Done.
 
 
-def main(fname_fastq1, fname_fastq2, *args):
+def main(fname_fastq1, fname_fastq2, fname_bcd_dictionary, *args):
     fname_fasta = extract_reads_from_PE_fastq(fname_fastq1, fname_fastq2)
     fname_mapped = call_bwa_mapper_on_fasta_file(fname_fasta)
     fname_filtered = filter_mapped_reads(fname_mapped)
     fname_starcode = call_starcode_on_filtered_file(fname_filtered)
     fnames_extra = [call_starcode_on_fastq_file(fname) for fname in args]
-    collect_integrations(fname_starcode, fname_mapped, *fnames_extra)
+    collect_integrations(fname_starcode, fname_mapped, fname_bcd_dictionary, *fnames_extra)
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], *sys.argv[3:])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], *sys.argv[4:])
