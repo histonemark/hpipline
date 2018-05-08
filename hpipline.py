@@ -14,21 +14,21 @@ class gzopen(object):
             self.f = gzip.GzipFile(fileobj=f)
         else:
             self.f = f
-            def __enter__(self):
-                return self
-   def __exit__(self, type, value, traceback):
-       try:
-           self.f.fileobj.close()
-       except AttributeError:
-           pass
-       finally:
-           self.f.close()
-           def __getattr__(self, name):
-               return getattr(self.f, name)
-   def __iter__(self):
-       return iter(self.f)
-   def next(self):
-       return next(self.f)
+    def __enter__(self):
+        return self
+    def __exit__(self, type, value, traceback):
+        try:
+            self.f.fileobj.close()
+        except AttributeError:
+            pass
+        finally:
+            self.f.close()
+    def __getattr__(self, name):
+        return getattr(self.f, name)
+    def __iter__(self):
+        return iter(self.f)
+    def next(self):
+        return next(self.f)
 
 # Standard library packages.
 import os
@@ -42,9 +42,6 @@ from itertools import izip
 
 # Others.
 import seeq
-
-from gzopen import gzopen
-
 
 LOGFNAME = 'hpiplog.txt'
 
@@ -244,7 +241,7 @@ def call_starcode_on_fastq_file(fname_fastq):
 # Read Promoter-barcode association table #########################
 
 pickle_path = "/users/gfilion/mcorrales/HPIP/libraries"
-bcd_promd = pickle.load(open("/".join([pickle_path,"prom_bcd.d"], "rb"))
+bcd_promd = pickle.load(open("/".join([pickle_path,"prom_bcd.d"]), "rb"))
 
 
 # Generate expression table #######################################
