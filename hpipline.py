@@ -99,12 +99,10 @@ def extract_reads_from_PE_fastq(fname_iPCR_PE1, fname_iPCR_PE2):
     return fname_fasta
 
 
-def call_bwa_mapper_on_fasta_file(fname_fasta):
+def call_bwa_mapper_on_fasta_file(fname_fasta, fname_genome_index):
     """This function takes the barcodes and sequence extracted from the
     sequencing files and calls bwa-mem to do the mapping with default
     settings to the Drosophila R6 reference genome"""
-
-    INDEX = '/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta'
 
     outfname_mapped = re.sub(r'\.fasta', '.sam', fname_fasta)
 
@@ -114,7 +112,8 @@ def call_bwa_mapper_on_fasta_file(fname_fasta):
 
     # System call to `bwa mem` with arguments and check the exit code.
     with open(outfname_mapped, 'w') as f:
-        map_process = subprocess.Popen(['bwa', 'mem', '-t4','-L0,0', INDEX,
+        map_process = subprocess.Popen(['bwa', 'mem', '-t4','-L0,0',
+                                        fname_genome_index,
                                         fname_fasta], stdout=f).wait()
         if int(map_process) < 0:
             sys.stderr.write("Error during the mapping\n")
@@ -361,9 +360,9 @@ def collect_integrations(fname_starcode_out, fname_mapped, fname_bcd_dictionary,
     # Done.
 
 
-def main(fname_fastq1, fname_fastq2, fname_bcd_dictionary, *args):
+def main(fname_fastq1, fname_fastq2, fname_bcd_dictionary, fname_genome_index, *args):
     fname_fasta = extract_reads_from_PE_fastq(fname_fastq1, fname_fastq2)
-    fname_mapped = call_bwa_mapper_on_fasta_file(fname_fasta)
+    fname_mapped = call_bwa_mapper_on_fasta_file(fname_fasta, fname_genome_index)
     fname_filtered = filter_mapped_reads(fname_mapped)
     fname_starcode = call_starcode_on_filtered_file(fname_filtered)
     fnames_extra = [call_starcode_on_fastq_file(fname) for fname in args]
@@ -371,4 +370,4 @@ def main(fname_fastq1, fname_fastq2, fname_bcd_dictionary, *args):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3], *sys.argv[4:])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], *sys.argv[5:])
