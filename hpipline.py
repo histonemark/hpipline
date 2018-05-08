@@ -159,7 +159,7 @@ def call_starcode_on_filtered_file(fname_filtered):
           '-t4',
           '-i', fname_filtered,
           '-o', fname_starcode,
-          ]).wait()
+          ])
     
     if int(starcode_process) < 0:
             sys.stderr.write("Error during Starcode call on: %s\n"
@@ -213,7 +213,7 @@ def call_starcode_on_fastq_file(fname_fastq):
           '-t4',
           '-i', barcode_tempf.name,
           '-o', brcd_outfname,
-          ]).wait()
+          ])
 
         if int(starcode_process) < 0:
             sys.stderr.write("Error during Starcode call on: %s\n"
@@ -225,7 +225,7 @@ def call_starcode_on_fastq_file(fname_fastq):
             '-t4',
             '-i', spike_tempf.name,
             '-o', spk_outfname,
-        ]).wait()
+        ])
 
         if int(starcode_process) < 0:
             sys.stderr.write("Error during Starcode call on: %s\n"
