@@ -212,6 +212,7 @@ def call_starcode_on_fastq_file(fname_fastq):
         starcode_process = subprocess.call([
           'starcode',
           '-t4',
+          '--print-clusters',
           '-i', barcode_tempf.name,
           '-o', brcd_outfname,
           ])
@@ -224,6 +225,7 @@ def call_starcode_on_fastq_file(fname_fastq):
         starcode_process = subprocess.call([
             'starcode',
             '-t4',
+            '--print-clusters',
             '-i', spike_tempf.name,
             '-o', spk_outfname,
         ])
