@@ -53,6 +53,18 @@ class gzopen(object):
 class FormatException(Exception):
     pass
 
+def call_starcode(fname_in, fname_out)
+    starcode_process = subprocess.call([
+          'starcode',
+          '-t4',
+          '--print-clusters',
+          '-i', fname_in,
+          '-o', fname_out,
+          ])
+    if int(starcode_process) < 0:
+        warn_message(__name__,"Error during Starcode call on: %s\n"
+                         % fname_out)
+
 def extract_reads_from_PE_fastq(fname_iPCR_PE1, fname_iPCR_PE2):
     """This function takes the 2 pair-end sequencing files and extracts the
     barcode making sure that the other read contains the transposon."""
@@ -128,17 +140,9 @@ def call_starcode_on_filtered_file(fname_filtered):
     if fname_filtered == fname_starcode:
         fname_starcode = fname_filtered + '_starcode.txt'
 
-    # Call starcode (qsub-it?)
-    if os.path.exists(fname_starcode):
-        return fname_starcode
-    starcode_process = subprocess.call([
-          'starcode',
-          '-t4',
-          '--print-clusters',
-          '-i', fname_filtered,
-          '-o', fname_starcode,
-          ])
-    
+    # now call starcode
+    call_starcode(fname_filtered, fname_starcode)
+   
     if int(starcode_process) < 0:
             sys.stderr.write("Error during Starcode call on: %s\n"
                              % fname_starcode)
@@ -177,30 +181,9 @@ def call_starcode_on_fastq_file(fname_fastq):
     barcode_tempf.close()
     spike_tempf.close()
 
-    # Call `starcode`.
-    starcode_process = subprocess.call([
-      'starcode',
-      '-t4',
-      '--print-clusters',
-      '-i', barcode_tempf.name,
-      '-o', brcd_outfname,
-      ])
-
-    if int(starcode_process) < 0:
-        sys.stderr.write("Error during Starcode call on: %s\n"
-                         % barcode_tempf.name)
-
-    starcode_process = subprocess.call([
-        'starcode',
-        '-t4',
-        '--print-clusters',
-        '-i', spike_tempf.name,
-        '-o', spk_outfname,
-    ])
-
-    if int(starcode_process) < 0:
-        sys.stderr.write("Error during Starcode call on: %s\n"
-                         % spk_outfname)
+    # Call starcode on barcode temp file and spike temp file
+    call_starcode(barcode_tempf.name, brcd_outfname)
+    call_starcode(spike_tempf.name, spk_outfname)
 
     # Delete temporary files.
     os.unlink(barcode_tempf.name)
