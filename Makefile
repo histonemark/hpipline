@@ -1,6 +1,6 @@
 # input files
 prom_bcd_dict=prom_bcd.p
-genome=/mnt/ant-login/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
+genome=/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
 iPCR_basename=Toy_iPCR_rep1
 cDNA_basename=Toy_cDNA_rep1
 gDNA_basename=Toy_gDNA_rep1

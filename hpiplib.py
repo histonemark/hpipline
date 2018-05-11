@@ -53,7 +53,7 @@ class gzopen(object):
 class FormatException(Exception):
     pass
 
-def call_starcode(fname_in, fname_out)
+def call_starcode(fname_in, fname_out) :
     starcode_process = subprocess.call([
           'starcode',
           '-t4',
