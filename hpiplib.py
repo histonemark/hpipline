@@ -89,21 +89,6 @@ def extract_reads_from_PE_fastq(fname_iPCR_PE1, fname_iPCR_PE2):
                 continue
             outf.write('>%s\n%s\n' % (brcd, genome))
 
-def call_bwa_mapper_on_fasta_file(fname_fasta, fname_genome_index):
-    """This function takes the barcodes and sequence extracted from the
-    sequencing files and calls bwa-mem to do the mapping with default
-    settings to the Drosophila R6 reference genome"""
-
-    outfname_mapped = re.sub(r'\.fasta', '.sam', fname_fasta)
-
-    # System call to `bwa mem` with arguments and check the exit code.
-    with open(outfname_mapped, 'w') as f:
-        map_process = subprocess.Popen(['bwa', 'mem', '-t4','-L0,0',
-                                        fname_genome_index,
-                                        fname_fasta], stdout=f).wait()
-        if int(map_process) < 0:
-            sys.stderr.write("Error during the mapping\n")
-
 def generate_counts_dict(fname_starcode_out, fname_mapped, fname_bcd_dictionary) :
     """ This function generates a dictionary that allows for knowing the
     integration sites of each barcode. The keys of the dictionary are the

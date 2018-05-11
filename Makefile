@@ -75,7 +75,7 @@ $(iPCR_fasta) : $(iPCR_fwd) $(iPCR_rev)
 # MAP READS
 ####################################
 $(iPCR_sam) : $(iPCR_fasta) $(genome)
-	@$(hpipline) call_bwa_mapper_on_fasta_file $^ 2> $(subst .sam,.bwa.log,$@)
+	bwa mem -t4 -L0,0 $(genome) $(iPCR_fasta) 1> $@ 2> $(subst .sam,.bwa.log,$@)
 
 ####################################
 # STARCODE ON iPCR READS
@@ -97,10 +97,18 @@ $(gDNA_starcode) : $(gDNA_fastq)
 $(gDNA_spikes_starcode) : $(gDNA_fastq)
 	sed -n '2~4p' $(gDNA_fastq) |\
 	  seeq -rd2 $(SPIKE) $(gDNA_fastq) |\
-	  $(starcode) -d2 --print-clusters 1> $(gDNA_spikes_starcode) 2> $(subst .txt,.log,$@)
+	  $(starcode) -d2 1> $(gDNA_spikes_starcode) 2> $(subst .txt,.log,$@)
 
-$(cDNA_starcode) $(cDNA_spikes_starcode) : $(cDNA_fastq)
-	@$(hpipline) call_starcode_on_fastq_file $< 2> $(subst .txt,.log,$@)
+$(cDNA_starcode) : $(cDNA_fastq)
+	sed -n '2~4p' $(cDNA_fastq) |\
+	  seeq -i -d2 $(SPIKE) |\
+	  grep -o '^.\{20\}'|\
+	  $(starcode) -d2 --print-clusters 1> $(cDNA_starcode) 2> $(subst .txt,.log,$@)
+
+$(cDNA_spikes_starcode) : $(cDNA_fastq)
+	sed -n '2~4p' $(cDNA_fastq) |\
+	  seeq -rd2 $(SPIKE) $(cDNA_fastq) |\
+	  $(starcode) -d2 1> $(cDNA_spikes_starcode) 2> $(subst .txt,.log,$@)
 
 ####################################
 # COLLECT INTEGRATIONS
