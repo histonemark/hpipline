@@ -15,7 +15,6 @@ gDNA_fastq=$(gDNA_basename).fastq
 # intermediate files
 iPCR_fasta=$(iPCR_basename).fasta
 iPCR_starcode=$(iPCR_basename)_starcode.txt
-iPCR_filtered=$(iPCR_basename)_filtered.txt
 iPCR_counts_dict=$(iPCR_basename)_counts_dict.p
 iPCR_sam=$(iPCR_basename).sam
 cDNA_starcode=$(cDNA_basename)_starcode.txt
@@ -27,7 +26,6 @@ gDNA_spikes_starcode=$(gDNA_basename)_spikes_starcode.txt
 INTERMEDIATE_IPCR=\
 	     $(iPCR_fasta)\
 	     $(iPCR_sam)\
-	     $(iPCR_filtered)\
 	     $(iPCR_counts_dict)\
 	     $(iPCR_starcode)
 
@@ -70,19 +68,18 @@ $(iPCR_fasta) : $(iPCR_fwd) $(iPCR_rev)
 	@$(hpipline) extract_reads_from_PE_fastq $^
 
 ####################################
-# MAP AND FILTER READS
+# MAP READS
 ####################################
 $(iPCR_sam) : $(iPCR_fasta) $(genome)
 	@$(hpipline) call_bwa_mapper_on_fasta_file $^ 2> $(subst .sam,.bwa.log,$@)
 
-$(iPCR_filtered) : $(iPCR_sam)
-	@$(hpipline) filter_mapped_reads $<
-
 ####################################
-# STARCODE ON FILTERED
+# STARCODE ON iPCR READS
 ####################################
-$(iPCR_starcode) : $(iPCR_filtered)
-	@$(hpipline) call_starcode_on_filtered_file $< 2> $(subst .txt,.log,$@)
+$(iPCR_starcode) : $(iPCR_sam)
+	grep -v '@' $(iPCR_sam) |\
+	  awk '{ print $$1 }' |\
+	  starcode -t4 -d2 --print-clusters 1> $@ 2> $(subst .txt,.log,$@)
 
 ####################################
 # STARCODE ON FASTQ

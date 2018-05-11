@@ -116,33 +116,6 @@ def call_bwa_mapper_on_fasta_file(fname_fasta, fname_genome_index):
         if int(map_process) < 0:
             sys.stderr.write("Error during the mapping\n")
 
-def filter_mapped_reads(fname_mapped):
-    """ This fuctions extracts the barcodes from the mapped file to feed
-        them to starcode"""
-
-    outfname_filtered = re.sub(r'\.sam', '_filtered.txt', fname_mapped)
-
-
-    with open(fname_mapped) as f, open(outfname_filtered, 'w') as g:
-        for line in f:
-            if line[0] == '@':
-                continue  # Get rid of header
-            items = line.split()
-            g.write('%s\n' % items[0])
-
-def call_starcode_on_filtered_file(fname_filtered):
-    """This function takes the barcodes contained in the first column of
-    the mapped file and feed's them to starcode that clusters them."""
-
-    fname_starcode = re.sub(r'_filtered.txt', '_starcode.txt', fname_filtered)
-
-    # Substitution failed, append '_starcode.txt' to avoid name collision.
-    if fname_filtered == fname_starcode:
-        fname_starcode = fname_filtered + '_starcode.txt'
-
-    # now call starcode
-    call_starcode(fname_filtered, fname_starcode)
-
 def call_starcode_on_fastq_file(fname_fastq):
     ''' Extracts the gDNA,cDNA reads and spikes and runs stracode on them.'''
     MIN_BRCD = 15
