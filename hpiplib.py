@@ -301,4 +301,5 @@ def collect_integrations(fname_starcode_out, fname_mapped, fname_bcd_dictionary,
                         outf.write('\t'.join(array) + '\n')
                     except IndexError:
                         continue
-    print('%s: mapped:%d, unmapped:%d\n'%(fname_mapped, mapped, unmapped))
+    print('%s: mapped:%d, unmapped:%d\n'%(fname_mapped, mapped, unmapped),
+         file=sys.stderr)

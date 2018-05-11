@@ -1,5 +1,5 @@
 # input files
-prom_bcd_dict=prom_bcd.p
+prom_bcd_dict=miniprom_bcd.p
 genome=/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
 iPCR_basename=Toy_iPCR_rep1
 cDNA_basename=Toy_cDNA_rep1
@@ -79,7 +79,7 @@ $(iPCR_filtered) : $(iPCR_sam)
 # STARCODE ON FILTERED
 ####################################
 $(iPCR_starcode) : $(iPCR_filtered)
-	@$(hpipline) call_starcode_on_filtered_file $< 2> $(subst .txt,.starcode.log,$@)
+	@$(hpipline) call_starcode_on_filtered_file $< 2> $(subst .txt,.log,$@)
 
 ####################################
 # STARCODE ON FASTQ
@@ -94,4 +94,4 @@ $(cDNA_starcode) $(cDNA_spikes_starcode) : $(cDNA_fastq)
 # COLLECT INTEGRATIONS
 ####################################
 $(iPCR_insertions) : $(iPCR_starcode) $(iPCR_sam) $(prom_bcd_dict) $(cDNA_starcode) $(cDNA_spikes_starcode) $(gDNA_starcode) $(gDNA_spikes_starcode)
-	@$(hpipline) collect_integrations $^ > collect_integrations.log
+	@$(hpipline) collect_integrations $^ 2> collect_integrations.log
