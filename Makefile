@@ -2,12 +2,11 @@
 SPIKE=CATGATTACCCTGTTATC
 
 # input files
-prom_bcd_dict=miniprom_bcd.p
-# genome=/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
-genome=/mnt/ant-login/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
-iPCR_basename=Toy_iPCR_rep1
-cDNA_basename=Toy_cDNA_rep1
-gDNA_basename=Toy_gDNA_rep1
+prom_bcd_dict=/users/gfilion/mcorrales/HPIP/libraries/prom_bcd.p
+genome=/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
+iPCR_basename=@iPCR_basename@
+cDNA_basename=@cDNA_basename@
+gDNA_basename=@gDNA_basename@
 
 # build file names based on base names
 iPCR_fwd=$(iPCR_basename)_fwd.fastq
