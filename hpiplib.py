@@ -142,10 +142,6 @@ def call_starcode_on_filtered_file(fname_filtered):
 
     # now call starcode
     call_starcode(fname_filtered, fname_starcode)
-   
-    if int(starcode_process) < 0:
-            sys.stderr.write("Error during Starcode call on: %s\n"
-                             % fname_starcode)
 
 def call_starcode_on_fastq_file(fname_fastq):
     ''' Extracts the gDNA,cDNA reads and spikes and runs stracode on them.'''
