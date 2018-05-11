@@ -185,38 +185,21 @@ def call_starcode_on_fastq_file(fname_fastq):
     os.unlink(barcode_tempf.name)
     os.unlink(spike_tempf.name)
 
-def collect_integrations(fname_starcode_out, fname_mapped, fname_bcd_dictionary,
-                        fname_cDNA, fname_cDNA_spike,
-                        fname_gDNA, fname_gDNA_spike):
-    """This function reads the starcode output and changes all the barcodes
-    mapped by their canonicals while it calculates the mapped distance
-    rejecting multiple mapping integrations or unmmaped ones. It also
-    counts the frequency that each barcode is found in the mapped data
-    even for the non-mapping barcodes."""
+def generate_counts_dict(fname_starcode_out, fname_mapped, fname_bcd_dictionary) :
+    """ This function generates a dictionary that allows for knowing the
+    integration sites of each barcode. The keys of the dictionary are the
+    barcode sequences, and the values are another dictionary. The internal
+    dictionary contains the (chrom, strand, coord, promoter) information as keys, and
+    the number of occurrences as values."""
 
+    # generate file name
+    fname_counts_dict = re.sub(r'\.sam', '_counts_dict.p',
+                                    fname_mapped)
 
-    # temporary fix to work with makefile
-    args = [(fname_cDNA,fname_cDNA_spike),
-            (fname_gDNA,fname_gDNA_spike)]
-
-    # First, open the barcode-promoter dictionary
+    # open big promoter-barcode dictionary
     bcd_promd = pickle.load(open(fname_bcd_dictionary, "rb"))
 
-    fname_insertions_table = re.sub(r'\.sam', '_insertions.txt',
-                                    fname_mapped)
-    # Substitution failed, append '_insertions.txt' to avoid name conflict.
-    if fname_insertions_table == fname_mapped:
-        fname_insertions_table = fname_mapped + '_insertions.txt'
-
-    def dist(intlist):
-        intlist.sort()
-        try:
-            if intlist[0][0] != intlist[-1][0]:
-                return float('inf')
-            return intlist[-1][1] - intlist[0][1]
-        except IndexError:
-            return float('inf')
-
+    # create a dictionary of "canonical" barcodes
     canonical = dict()
     with open(fname_starcode_out) as f:
         for line in f:
@@ -224,13 +207,15 @@ def collect_integrations(fname_starcode_out, fname_mapped, fname_bcd_dictionary,
             for brcd in items[2].split(','):
                 canonical[brcd] = items[0]
 
-    counts = defaultdict(lambda: defaultdict(int))
+    # generate the counts dictionary
+    counts = {}
     ISREV = 0b10000
     with open(fname_mapped) as f:
         for line in f:
             if line[0] == '@':
                 continue
             items = line.split()
+            # fetch the canonical barcode from the output of starcode
             try:
                 barcode = canonical[items[0]]
             except KeyError:
@@ -238,7 +223,6 @@ def collect_integrations(fname_starcode_out, fname_mapped, fname_bcd_dictionary,
             if items[2] == '*':
                 position = ('', 0)
             else:
-                # GTTACATCGGTTAATAGATA 16  2L  9743332 60  9S32M [...]
                 try:
                     # Use dictionary associates barcodes to promoters
                     # from the library sequencing.
@@ -249,7 +233,46 @@ def collect_integrations(fname_starcode_out, fname_mapped, fname_bcd_dictionary,
                 chrom = items[2]
                 pos = int(items[3])
                 ident = (chrom, pos, strand, promoter)
+                if not counts.has_key(barcode) : 
+                    counts[barcode] = {}
+                if not counts[barcode].has_key(ident) :
+                    counts[barcode][ident] = 0
                 counts[barcode][ident] += 1
+
+    # save to counts dictionary file
+    pickle.dump(counts, open(fname_counts_dict,'wb'))
+
+def collect_integrations(fname_counts_dict, fname_cDNA, fname_cDNA_spike,
+                        fname_gDNA, fname_gDNA_spike):
+    """This function reads the starcode output and changes all the barcodes
+    mapped by their canonicals while it calculates the mapped distance
+    rejecting multiple mapping integrations or unmmaped ones. It also
+    counts the frequency that each barcode is found in the mapped data
+    even for the non-mapping barcodes."""
+
+    # temporary fix to work with makefile
+    args = [(fname_cDNA,fname_cDNA_spike),
+            (fname_gDNA,fname_gDNA_spike)]
+
+    # generate output file name
+    fname_insertions_table = re.sub(r'\_counts_dict.p', '_insertions.txt',
+                                    fname_counts_dict)
+
+    # Substitution failed, append '_insertions.txt' to avoid name conflict.
+    if fname_insertions_table == fname_counts_dict:
+        fname_insertions_table = fname_counts_dict + '_insertions.txt'
+
+    # open curated counts dictionary
+    counts = pickle.load(open(fname_counts_dict, "rb"))
+
+    def dist(intlist):
+        intlist.sort()
+        try:
+            if intlist[0][0] != intlist[-1][0]:
+                return float('inf')
+            return intlist[-1][1] - intlist[0][1]
+        except IndexError:
+            return float('inf')
 
     integrations = dict()
     for brcd, hist in counts.items():
@@ -301,5 +324,5 @@ def collect_integrations(fname_starcode_out, fname_mapped, fname_bcd_dictionary,
                         outf.write('\t'.join(array) + '\n')
                     except IndexError:
                         continue
-    print('%s: mapped:%d, unmapped:%d\n'%(fname_mapped, mapped, unmapped),
+    print('%s: mapped:%d, unmapped:%d\n'%(fname_counts_dict, mapped, unmapped),
          file=sys.stderr)

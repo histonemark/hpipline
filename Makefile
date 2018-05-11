@@ -1,6 +1,7 @@
 # input files
 prom_bcd_dict=miniprom_bcd.p
-genome=/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
+# genome=/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
+genome=/mnt/ant-login/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
 iPCR_basename=Toy_iPCR_rep1
 cDNA_basename=Toy_cDNA_rep1
 gDNA_basename=Toy_gDNA_rep1
@@ -15,6 +16,7 @@ gDNA_fastq=$(gDNA_basename).fastq
 iPCR_fasta=$(iPCR_basename).fasta
 iPCR_starcode=$(iPCR_basename)_starcode.txt
 iPCR_filtered=$(iPCR_basename)_filtered.txt
+iPCR_counts_dict=$(iPCR_basename)_counts_dict.p
 iPCR_sam=$(iPCR_basename).sam
 cDNA_starcode=$(cDNA_basename)_starcode.txt
 cDNA_spikes_starcode=$(cDNA_basename)_spikes_starcode.txt
@@ -26,6 +28,7 @@ INTERMEDIATE_IPCR=\
 	     $(iPCR_fasta)\
 	     $(iPCR_sam)\
 	     $(iPCR_filtered)\
+	     $(iPCR_counts_dict)\
 	     $(iPCR_starcode)
 
 INTERMEDIATE_CDNA=\
@@ -93,5 +96,8 @@ $(cDNA_starcode) $(cDNA_spikes_starcode) : $(cDNA_fastq)
 ####################################
 # COLLECT INTEGRATIONS
 ####################################
-$(iPCR_insertions) : $(iPCR_starcode) $(iPCR_sam) $(prom_bcd_dict) $(cDNA_starcode) $(cDNA_spikes_starcode) $(gDNA_starcode) $(gDNA_spikes_starcode)
+$(iPCR_counts_dict) : $(iPCR_starcode) $(iPCR_sam) $(prom_bcd_dict)
+	@$(hpipline) generate_counts_dict $^ 2> $(subst .p,.log,$@)
+
+$(iPCR_insertions) : $(iPCR_counts_dict) $(cDNA_starcode) $(cDNA_spikes_starcode) $(gDNA_starcode) $(gDNA_spikes_starcode)
 	@$(hpipline) collect_integrations $^ 2> collect_integrations.log
