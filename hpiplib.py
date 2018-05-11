@@ -53,18 +53,6 @@ class gzopen(object):
 class FormatException(Exception):
     pass
 
-def call_starcode(fname_in, fname_out) :
-    starcode_process = subprocess.call([
-          'starcode',
-          '-t4',
-          '--print-clusters',
-          '-i', fname_in,
-          '-o', fname_out,
-          ])
-    if int(starcode_process) < 0:
-        warn_message(__name__,"Error during Starcode call on: %s\n"
-                         % fname_out)
-
 def extract_reads_from_PE_fastq(fname_iPCR_PE1, fname_iPCR_PE2):
     """This function takes the 2 pair-end sequencing files and extracts the
     barcode making sure that the other read contains the transposon."""
@@ -115,48 +103,6 @@ def call_bwa_mapper_on_fasta_file(fname_fasta, fname_genome_index):
                                         fname_fasta], stdout=f).wait()
         if int(map_process) < 0:
             sys.stderr.write("Error during the mapping\n")
-
-def call_starcode_on_fastq_file(fname_fastq):
-    ''' Extracts the gDNA,cDNA reads and spikes and runs stracode on them.'''
-    MIN_BRCD = 15
-    MAX_BRCD = 25
-
-    brcd_outfname = re.sub(r'\.fastq.*', '_starcode.txt', fname_fastq)
-    spk_outfname = re.sub(r'\.fastq.*', '_spikes_starcode.txt', fname_fastq)
-    if brcd_outfname == fname_fastq:
-        brcd_outfname = fname_fastq + '_starcode.txt'
-    if spk_outfname == fname_fastq:
-        spk_outfname = fname_fastq + '_spikes_starcode.txt'
-
-    if os.path.exists(brcd_outfname) and os.path.exists(spk_outfname):
-        return (brcd_outfname, spk_outfname)
-
-    SPIKE = seeq.compile('CATGATTACCCTGTTATC', 2)
-    barcode_tempf = tempfile.NamedTemporaryFile(delete=False)
-    spike_tempf = tempfile.NamedTemporaryFile(delete=False)
-    with gzopen(fname_fastq) as f:
-        outf = None
-        for lineno, line in enumerate(f):
-            if lineno % 4 != 1:
-                continue
-            spike = SPIKE.match(line)
-            if spike is not None:
-                outf = spike_tempf
-                outf.write(line[:spike.matchlist[0][0]] + '\n')
-            else:
-                outf = barcode_tempf
-                outf.write(line[:20] + '\n')
-
-    barcode_tempf.close()
-    spike_tempf.close()
-
-    # Call starcode on barcode temp file and spike temp file
-    call_starcode(barcode_tempf.name, brcd_outfname)
-    call_starcode(spike_tempf.name, spk_outfname)
-
-    # Delete temporary files.
-    os.unlink(barcode_tempf.name)
-    os.unlink(spike_tempf.name)
 
 def generate_counts_dict(fname_starcode_out, fname_mapped, fname_bcd_dictionary) :
     """ This function generates a dictionary that allows for knowing the

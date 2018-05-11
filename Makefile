@@ -1,3 +1,6 @@
+# SPIKE
+SPIKE=CATGATTACCCTGTTATC
+
 # input files
 prom_bcd_dict=miniprom_bcd.p
 # genome=/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
@@ -42,6 +45,7 @@ iPCR_insertions=$(iPCR_basename)_insertions.txt
 
 # program names
 hpipline=python hpipline.py
+starcode=starcode -t4
 
 .PHONY : all clean cleanintermediate cleanlog cleanall
 
@@ -79,13 +83,21 @@ $(iPCR_sam) : $(iPCR_fasta) $(genome)
 $(iPCR_starcode) : $(iPCR_sam)
 	grep -v '@' $(iPCR_sam) |\
 	  awk '{ print $$1 }' |\
-	  starcode -t4 -d2 --print-clusters 1> $@ 2> $(subst .txt,.log,$@)
+	  $(starcode) -d2 --print-clusters 1> $@ 2> $(subst .txt,.log,$@)
 
 ####################################
 # STARCODE ON FASTQ
 ####################################
-$(gDNA_starcode) $(gDNA_spikes_starcode) : $(gDNA_fastq)
-	@$(hpipline) call_starcode_on_fastq_file $< 2> $(subst .txt,.log,$@)
+$(gDNA_starcode) : $(gDNA_fastq)
+	sed -n '2~4p' $(gDNA_fastq) |\
+	  seeq -i -d2 $(SPIKE) |\
+	  grep -o '^.\{20\}'|\
+	  $(starcode) -d2 --print-clusters 1> $(gDNA_starcode) 2> $(subst .txt,.log,$@)
+
+$(gDNA_spikes_starcode) : $(gDNA_fastq)
+	sed -n '2~4p' $(gDNA_fastq) |\
+	  seeq -rd2 $(SPIKE) $(gDNA_fastq) |\
+	  $(starcode) -d2 --print-clusters 1> $(gDNA_spikes_starcode) 2> $(subst .txt,.log,$@)
 
 $(cDNA_starcode) $(cDNA_spikes_starcode) : $(cDNA_fastq)
 	@$(hpipline) call_starcode_on_fastq_file $< 2> $(subst .txt,.log,$@)
