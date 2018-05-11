@@ -300,14 +300,15 @@ def collect_integrations(fname_counts_dict, fname_cDNA, fname_cDNA_spike,
     with open(fname_insertions_table, 'w') as outf:
         unmapped = 0
         mapped = 0
+        outf.write('# bcd chrom strand coord mRNA prom cDNA gDNA\n')
         for brcd in sorted(integrations, key=lambda x:
                            (integrations.get(x), x)):
             (chrom, pos, strand, promoter), total = integrations[brcd]
             mapped += 1
-            outf.write('%s\t%s\t%s\t%d\t%d\t%s\n' %
+            outf.write('%s\t%s\t%s\t%d\t%d\t%s' %
                        (brcd, chrom, strand, pos, total, promoter))
-        for fname, ignore in args:
-            outf.write('\t' + str(reads[fname][brcd]))
+            for fname, ignore in args:
+                outf.write('\t' + str(reads[fname][brcd]))
             outf.write('\n')
 
         # Now add the spikes if the experiment was spiked, otherwise continue.
