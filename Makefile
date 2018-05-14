@@ -45,6 +45,7 @@ iPCR_insertions=$(iPCR_basename)_insertions.txt
 # program names
 hpipline=python hpipline.py
 starcode=starcode -t4
+seeq=seeq
 
 .PHONY : all clean cleanintermediate cleanlog cleanall
 
@@ -89,24 +90,24 @@ $(iPCR_starcode) : $(iPCR_sam)
 ####################################
 $(gDNA_starcode) : $(gDNA_fastq)
 	sed -n '2~4p' $(gDNA_fastq) |\
-	  seeq -i -d2 $(SPIKE) |\
+	  $(seeq) -i -d2 $(SPIKE) |\
 	  grep -o '^.\{20\}'|\
 	  $(starcode) -d2 --print-clusters 1> $(gDNA_starcode) 2> $(subst .txt,.log,$@)
 
 $(gDNA_spikes_starcode) : $(gDNA_fastq)
 	sed -n '2~4p' $(gDNA_fastq) |\
-	  seeq -rd2 $(SPIKE) $(gDNA_fastq) |\
+	  $(seeq) -rd2 $(SPIKE) $(gDNA_fastq) |\
 	  $(starcode) -d2 1> $(gDNA_spikes_starcode) 2> $(subst .txt,.log,$@)
 
 $(cDNA_starcode) : $(cDNA_fastq)
 	sed -n '2~4p' $(cDNA_fastq) |\
-	  seeq -i -d2 $(SPIKE) |\
+	  $(seeq) -i -d2 $(SPIKE) |\
 	  grep -o '^.\{20\}'|\
 	  $(starcode) -d2 --print-clusters 1> $(cDNA_starcode) 2> $(subst .txt,.log,$@)
 
 $(cDNA_spikes_starcode) : $(cDNA_fastq)
 	sed -n '2~4p' $(cDNA_fastq) |\
-	  seeq -rd2 $(SPIKE) $(cDNA_fastq) |\
+	  $(seeq) -rd2 $(SPIKE) $(cDNA_fastq) |\
 	  $(starcode) -d2 1> $(cDNA_spikes_starcode) 2> $(subst .txt,.log,$@)
 
 ####################################
