@@ -214,20 +214,5 @@ def collect_integrations(fname_counts_dict, fname_cDNA, fname_cDNA_spike,
             for fname, ignore in args:
                 outf.write('\t' + str(reads[fname][brcd]))
             outf.write('\n')
-
-        # Now add the spikes if the experiment was spiked, otherwise continue.
-        N = len(args)
-        for i in range(N):
-            (ignore, fname) = args[i]
-            with open(fname) as f:
-                for line in f:
-                    try:
-                        items = line.rstrip().split('\t')
-                        array = ['0'] * N
-                        array[i] = items[1]
-                        outf.write('%s\tspike\t*\t0\t0\t' % items[0])
-                        outf.write('\t'.join(array) + '\n')
-                    except IndexError:
-                        continue
     print('%s: mapped:%d, unmapped:%d\n'%(fname_counts_dict, mapped, unmapped),
          file=sys.stderr)
