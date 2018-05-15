@@ -146,8 +146,7 @@ def generate_counts_dict(fname_starcode_out, fname_mapped, fname_bcd_dictionary)
     # save to counts dictionary file
     pickle.dump(counts, open(fname_counts_dict,'wb'))
 
-def collect_integrations(fname_counts_dict, fname_cDNA, fname_cDNA_spike,
-                        fname_gDNA, fname_gDNA_spike):
+def collect_integrations(fname_counts_dict, fname_cDNA, fname_gDNA) :
     """This function reads the starcode output and changes all the barcodes
     mapped by their canonicals while it calculates the mapped distance
     rejecting multiple mapping integrations or unmmaped ones. It also
@@ -155,8 +154,7 @@ def collect_integrations(fname_counts_dict, fname_cDNA, fname_cDNA_spike,
     even for the non-mapping barcodes."""
 
     # temporary fix to work with makefile
-    args = [(fname_cDNA,fname_cDNA_spike),
-            (fname_gDNA,fname_gDNA_spike)]
+    args = [fname_cDNA,fname_gDNA]
 
     # generate output file name
     fname_insertions_table = re.sub(r'\_counts_dict.p', '_insertions.txt',
@@ -192,7 +190,7 @@ def collect_integrations(fname_counts_dict, fname_cDNA, fname_cDNA_spike,
     # Count reads from other files.
     reads = dict()
     # First item of tuple is barcode file, second is the spike's one
-    for (fname, ignore) in args:
+    for fname in args:
         reads[fname] = defaultdict(int)
         with open(fname) as f:
             for line in f:
@@ -211,7 +209,7 @@ def collect_integrations(fname_counts_dict, fname_cDNA, fname_cDNA_spike,
             mapped += 1
             outf.write('%s\t%s\t%s\t%d\t%d\t%s' %
                        (brcd, chrom, strand, pos, total, promoter))
-            for fname, ignore in args:
+            for fname in args:
                 outf.write('\t' + str(reads[fname][brcd]))
             outf.write('\n')
     print('%s: mapped:%d, unmapped:%d\n'%(fname_counts_dict, mapped, unmapped),

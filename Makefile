@@ -48,9 +48,11 @@ starcode=starcode -t4
 seeq=seeq
 extract_reads_from_fastq=sed -n '2~4p'
 
-.PHONY : all clean cleanintermediate cleanlog cleanall
+.PHONY : all spikes clean cleanintermediate cleanlog cleanall
 
-all : $(iPCR_insertions)
+all : $(iPCR_insertions) spikes
+
+spikes : $(cDNA_spikes_starcode) $(gDNA_spikes_starcode)
 
 cleanlog :
 	rm -rf *.log
@@ -117,5 +119,5 @@ $(cDNA_spikes_starcode) : $(cDNA_fastq)
 $(iPCR_counts_dict) : $(iPCR_starcode) $(iPCR_sam) $(prom_bcd_dict)
 	@$(hpipline) generate_counts_dict $^ 2> $(subst .p,.log,$@)
 
-$(iPCR_insertions) : $(iPCR_counts_dict) $(cDNA_starcode) $(cDNA_spikes_starcode) $(gDNA_starcode) $(gDNA_spikes_starcode)
+$(iPCR_insertions) : $(iPCR_counts_dict) $(cDNA_starcode) $(gDNA_starcode)
 	@$(hpipline) collect_integrations $^ 2> collect_integrations.log
