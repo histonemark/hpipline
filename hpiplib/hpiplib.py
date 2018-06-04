@@ -53,42 +53,6 @@ class gzopen(object):
 class FormatException(Exception):
     pass
 
-def extract_reads_from_PE_fastq(fname_iPCR_PE1, fname_iPCR_PE2):
-    """This function takes the 2 pair-end sequencing files and extracts the
-    barcode making sure that the other read contains the transposon."""
-    MIN_BRCD = 15
-    MAX_BRCD = 25
-    MIN_GENOME = 15
-
-    # The known parts of the sequences are matched with a Levenshtein
-    # automaton. On the reverse read, the end of the transposon
-    # corresponds to a 34 bp sequence ending as shown below. We allow
-    # up to 5 mismatches/indels. On the forward read, the only known
-    # sequence is the CATG after the barcode, which is matched exactly.
-
-    # Open a file to write
-    fname_fasta = fname_iPCR_PE1.split('_fwd.fastq')[0] + '.fasta'
-
-    # Substitution failed, append '.fasta' to avoid name collision.
-    if fname_fasta == fname_iPCR_PE1:
-        fname_fasta = fname_iPCR_PE1 + '.fasta'
-
-    with gzopen(fname_iPCR_PE1) as f, gzopen(fname_iPCR_PE2) as g, \
-            open(fname_fasta, 'w') as outf:
-        # Aggregate iterator of f,g iterators -> izip(f,g).
-        for lineno, (line1, line2) in enumerate(izip(f, g)):
-            # Take sequence only.
-            if lineno % 4 != 1:
-                continue
-            brcd = line1[:20]
-            if not MIN_BRCD < len(brcd) < MAX_BRCD:
-                continue
-            # Lets relie on bwa mapping results to decide
-            genome = line2.rstrip()
-            if len(genome) < MIN_GENOME:
-                continue
-            outf.write('>%s\n%s\n' % (brcd, genome))
-
 def generate_counts_dict(fname_starcode_out, fname_mapped, fname_bcd_dictionary) :
     """ This function generates a dictionary that allows for knowing the
     integration sites of each barcode. The keys of the dictionary are the

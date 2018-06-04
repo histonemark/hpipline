@@ -1,3 +1,5 @@
+SHELL:=/bin/bash
+
 # SPIKE
 SPIKE=CATGATTACCCTGTTATC
 
@@ -15,7 +17,6 @@ cDNA_fastq=$(cDNA_basename).fastq
 gDNA_fastq=$(gDNA_basename).fastq
 
 # intermediate files
-iPCR_fasta=$(iPCR_basename).fasta
 iPCR_starcode=$(iPCR_basename)_starcode.txt
 iPCR_counts_dict=$(iPCR_basename)_counts_dict.p
 iPCR_sam=$(iPCR_basename).sam
@@ -26,7 +27,6 @@ gDNA_spikes_starcode=$(gDNA_basename)_spikes_starcode.txt
 
 # groups of files
 INTERMEDIATE_IPCR=\
-	     $(iPCR_fasta)\
 	     $(iPCR_sam)\
 	     $(iPCR_counts_dict)\
 	     $(iPCR_starcode)
@@ -47,6 +47,7 @@ hpipline=python hpipline.py
 starcode=starcode -t4
 seeq=seeq
 extract_reads_from_fastq=sed -n '2~4p'
+extract_bcd=grep -o '^.\{20\}'
 
 .PHONY : all spikes clean cleanintermediate cleanlog cleanall
 
@@ -69,16 +70,13 @@ cleanall : clean
 	rm -rf $(iPCR_insertions)
 
 ####################################
-# EXTRACT READS FROM PAIRED-END SEQ
-####################################
-$(iPCR_fasta) : $(iPCR_fwd) $(iPCR_rev)
-	@$(hpipline) extract_reads_from_PE_fastq $^
-
-####################################
 # MAP READS
 ####################################
-$(iPCR_sam) : $(iPCR_fasta) $(genome)
-	bwa mem -t4 -L0,0 $(genome) $(iPCR_fasta) 1> $@ 2> $(subst .sam,.bwa.log,$@)
+$(iPCR_sam) : $(iPCR_fwd) $(iPCR_rev) $(genome)
+	paste -d"\n" \
+	  <($(extract_reads_from_fastq) $(iPCR_fwd) | $(extract_bcd) | sed 's/^/>/')\
+	  <($(extract_reads_from_fastq) $(iPCR_rev)) |\
+	  bwa mem -t4 -L0,0 $(genome) - 1> $@ 2> $(subst .sam,.bwa.log,$@)
 
 ####################################
 # STARCODE ON iPCR READS
@@ -94,7 +92,7 @@ $(iPCR_starcode) : $(iPCR_sam)
 $(gDNA_starcode) : $(gDNA_fastq)
 	$(extract_reads_from_fastq) $(gDNA_fastq) |\
 	  $(seeq) -i -d2 $(SPIKE) |\
-	  grep -o '^.\{20\}'|\
+	  $(extract_bcd) |\
 	  $(starcode) -d2 --print-clusters 1> $(gDNA_starcode) 2> $(subst .txt,.log,$@)
 
 $(gDNA_spikes_starcode) : $(gDNA_fastq)
@@ -105,7 +103,7 @@ $(gDNA_spikes_starcode) : $(gDNA_fastq)
 $(cDNA_starcode) : $(cDNA_fastq)
 	$(extract_reads_from_fastq) $(cDNA_fastq) |\
 	  $(seeq) -i -d2 $(SPIKE) |\
-	  grep -o '^.\{20\}'|\
+	  $(extract_bcd) |\
 	  $(starcode) -d2 --print-clusters 1> $(cDNA_starcode) 2> $(subst .txt,.log,$@)
 
 $(cDNA_spikes_starcode) : $(cDNA_fastq)
