@@ -15,12 +15,10 @@ try :
                                       "Input file '%s' does not exist"%(f))
                 sys.exit(1)
         # if we are here, everything is fine and we can call the method
-        hpiplib.log_message(program_name,'%s: START'%(method_name))
         method_to_call(*args)
-        hpiplib.log_message(program_name,'%s: DONE'%(method_name))
     except AttributeError :
-        hpiplib.error_message(program_name,"Unrecognized method '%s'"%(method_name))
+        print("Unrecognized method '%s'"%(method_name),file=sys.stderr)
         sys.exit(1)
 except IndexError :
-    hpiplib.error_message(program_name,'Usage: python hpipline.py <method> [args ...]')
+    print('Usage: python hpipline.py <method> [args ...]',file=sys.stderr)
     sys.exit(1)

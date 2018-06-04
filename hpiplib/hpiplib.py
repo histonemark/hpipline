@@ -9,47 +9,6 @@ from collections import defaultdict
 from itertools import izip
 import seeq
 
-# utility functions
-def time_string () :
-    return time.strftime("[%Y-%m-%d %H:%M:%S]", time.localtime ())
-
-def error_message(program_name, message) :
-    full_message = "%s %s:   ERROR: %s"%(time_string(), program_name, message)
-    print(full_message, file=sys.stderr)
-
-def log_message(program_name, message) :
-    full_message = "%s %s:    INFO: %s"%(time_string(), program_name, message)
-    print(full_message)
-
-def warn_message(program_name, message) :
-    full_message = "%s %s: WARNING: %s"%(time_string(), program_name, message)
-    print(full_message)
-
-class gzopen(object):
-    def __init__(self, fname):
-        f = open(fname)
-        magic_number = f.read(2)
-        f.seek(0)
-        if magic_number == '\x1f\x8b':
-            self.f = gzip.GzipFile(fileobj=f)
-        else:
-            self.f = f
-    def __enter__(self):
-        return self
-    def __exit__(self, type, value, traceback):
-        try:
-            self.f.fileobj.close()
-        except AttributeError:
-            pass
-        finally:
-            self.f.close()
-    def __getattr__(self, name):
-        return getattr(self.f, name)
-    def __iter__(self):
-        return iter(self.f)
-    def next(self):
-        return next(self.f)
-
 class FormatException(Exception):
     pass
 
