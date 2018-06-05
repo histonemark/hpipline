@@ -66,8 +66,8 @@ clean : cleanintermediate cleanlog
 ####################################
 $(iPCR_sam) : $(iPCR_fwd) $(iPCR_rev) $(genome)
 	paste -d"\n" \
-	  <($(extract_reads_from_fastq) $(iPCR_fwd) | $(extract_bcd) | sed 's/^/>/')\
-	  <($(extract_reads_from_fastq) $(iPCR_rev)) |\
+	  <(zcat $(iPCR_fwd) | $(extract_reads_from_fastq) | $(extract_bcd) | sed 's/^/>/')\
+	  <(zcat $(iPCR_rev) | $(extract_reads_from_fastq)) |\
 	  bwa mem -t4 -L0,0 $(genome) - 1> $@ 2> $(subst .sam,.bwa.log,$@)
 
 ####################################
@@ -82,23 +82,27 @@ $(iPCR_starcode) : $(iPCR_sam)
 # STARCODE ON FASTQ
 ####################################
 $(gDNA_starcode) : $(gDNA_fastq)
-	$(extract_reads_from_fastq) $(gDNA_fastq) |\
+	zcat $(gDNA_fastq) |\
+	  $(extract_reads_from_fastq) |\
 	  $(seeq) -i -d2 $(SPIKE) |\
 	  $(extract_bcd) |\
 	  $(starcode) -d2 --print-clusters 1> $(gDNA_starcode) 2> $(subst .txt,.log,$@)
 
 $(gDNA_spikes_starcode) : $(gDNA_fastq)
-	$(extract_reads_from_fastq) $(gDNA_fastq) |\
+	zcat $(gDNA_fastq) |\
+	$(extract_reads_from_fastq) |\
 	  $(seeq) -rd2 $(SPIKE) $(gDNA_fastq) |\
 	  $(starcode) -d2 1> $(gDNA_spikes_starcode) 2> $(subst .txt,.log,$@)
 
 $(cDNA_starcode) : $(cDNA_fastq)
-	$(extract_reads_from_fastq) $(cDNA_fastq) |\
+	zcat $(cDNA_fastq) |\
+	$(extract_reads_from_fastq) |\
 	  $(seeq) -i -d2 $(SPIKE) |\
 	  $(extract_bcd) |\
 	  $(starcode) -d2 --print-clusters 1> $(cDNA_starcode) 2> $(subst .txt,.log,$@)
 
 $(cDNA_spikes_starcode) : $(cDNA_fastq)
-	$(extract_reads_from_fastq) $(cDNA_fastq) |\
+	zcat $(cDNA_fastq) |\
+	$(extract_reads_from_fastq) |\
 	  $(seeq) -rd2 $(SPIKE) $(cDNA_fastq) |\
 	  $(starcode) -d2 1> $(cDNA_spikes_starcode) 2> $(subst .txt,.log,$@)
