@@ -4,26 +4,24 @@ SHELL:=/bin/bash
 SPIKE=CATGATTACCCTGTTATC
 
 # input files
+libname=@LIBNAME@
 prom_bcd_dict=/users/gfilion/mcorrales/HPIP/libraries/prom_bcd.p
 genome=/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
-iPCR_basename=@iPCR_basename@
-cDNA_basename=@cDNA_basename@
-gDNA_basename=@gDNA_basename@
 
 # build file names based on base names
-iPCR_fwd=$(iPCR_basename)_fwd.fastq
-iPCR_rev=$(iPCR_basename)_Rev.fastq
-cDNA_fastq=$(cDNA_basename).fastq
-gDNA_fastq=$(gDNA_basename).fastq
+iPCR_fwd=iPCR-fwd.fastq.gz
+iPCR_rev=iPCR-Rev.fastq.gz
+cDNA_fastq=cDNA.fastq.gz
+gDNA_fastq=gDNA.fastq.gz
 
 # intermediate files
-iPCR_starcode=$(iPCR_basename)_starcode.txt
-iPCR_counts_dict=$(iPCR_basename)_counts_dict.p
-iPCR_sam=$(iPCR_basename).sam
-cDNA_starcode=$(cDNA_basename)_starcode.txt
-cDNA_spikes_starcode=$(cDNA_basename)_spikes_starcode.txt
-gDNA_starcode=$(gDNA_basename)_starcode.txt
-gDNA_spikes_starcode=$(gDNA_basename)_spikes_starcode.txt
+iPCR_starcode=iPCR-starcode.txt
+iPCR_counts_dict=iPCR-counts_dict.p
+iPCR_sam=iPCR.sam
+cDNA_starcode=cDNA-starcode.txt
+cDNA_spikes_starcode=cDNA-spikes_starcode.txt
+gDNA_starcode=gDNA-starcode.txt
+gDNA_spikes_starcode=gDNA-spikes_starcode.txt
 
 # groups of files
 INTERMEDIATE_IPCR=\
@@ -39,19 +37,15 @@ INTERMEDIATE_GDNA=\
 	     $(gDNA_starcode)\
 	     $(gDNA_spikes_starcode)
 
-# final target
-iPCR_insertions=$(iPCR_basename)_insertions.txt
-
 # program names
-hpipline=python hpipline.py
 starcode=starcode -t4
 seeq=seeq
 extract_reads_from_fastq=sed -n '2~4p'
 extract_bcd=grep -o '^.\{20\}'
 
-.PHONY : all spikes clean cleanintermediate cleanlog cleanall
+.PHONY : all spikes clean cleanintermediate cleanlog
 
-all : $(iPCR_insertions) spikes
+all : $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
 
 spikes : $(cDNA_spikes_starcode) $(gDNA_spikes_starcode)
 
@@ -65,9 +59,6 @@ cleanintermediate :
 	  $(INTERMEDIATE_GDNA)
 
 clean : cleanintermediate cleanlog
-
-cleanall : clean
-	rm -rf $(iPCR_insertions)
 
 ####################################
 # MAP READS
@@ -110,12 +101,3 @@ $(cDNA_spikes_starcode) : $(cDNA_fastq)
 	$(extract_reads_from_fastq) $(cDNA_fastq) |\
 	  $(seeq) -rd2 $(SPIKE) $(cDNA_fastq) |\
 	  $(starcode) -d2 1> $(cDNA_spikes_starcode) 2> $(subst .txt,.log,$@)
-
-####################################
-# COLLECT INTEGRATIONS
-####################################
-$(iPCR_counts_dict) : $(iPCR_starcode) $(iPCR_sam) $(prom_bcd_dict)
-	@$(hpipline) generate_counts_dict $^ 2> $(subst .p,.log,$@)
-
-$(iPCR_insertions) : $(iPCR_counts_dict) $(cDNA_starcode) $(gDNA_starcode)
-	@$(hpipline) collect_integrations $^ 2> collect_integrations.log
