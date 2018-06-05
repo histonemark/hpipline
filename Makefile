@@ -10,7 +10,7 @@ genome=/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
 
 # build file names based on base names
 iPCR_fwd=iPCR-fwd.fastq.gz
-iPCR_rev=iPCR-Rev.fastq.gz
+iPCR_rev=iPCR-rev.fastq.gz
 cDNA_fastq=cDNA.fastq.gz
 gDNA_fastq=gDNA.fastq.gz
 
