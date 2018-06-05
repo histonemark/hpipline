@@ -5,8 +5,9 @@ SPIKE=CATGATTACCCTGTTATC
 
 # input files
 libname=@LIBNAME@
-prom_bcd_dict=/users/gfilion/mcorrales/HPIP/libraries/prom_bcd.p
-genome=/users/gfilion/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
+# prom_bcd_dict=/users/gfilion/mcorrales/HPIP/libraries/prom_bcd.p
+prom_bcd_dict=/mnt/ant-login/mcorrales/HPIP/libraries/prom_bcd.p
+genome=/mnt/ant-login/mcorrales/HPIP/dm4R6/dmel-all-chromosome-r6.15.fasta
 
 # build file names based on base names
 iPCR_fwd=iPCR-fwd.fastq.gz
