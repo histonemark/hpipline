@@ -2,13 +2,7 @@ reps = @reps@
 
 default : all
 
-all : $(reps)
-	for dir in $(reps); do \
-	  make -C $$dir ; \
-	done
-
 $(reps) ::
 	$(MAKE) -C $@ $(MAKECMDGOALS)
-
 
 all clean : $(reps)
