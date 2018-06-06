@@ -1,0 +1,6 @@
+reps = rep1 rep2
+
+all : $(reps)
+	for dir in $(reps); do \
+	  make -C $$dir ; \
+	done

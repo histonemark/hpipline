@@ -1,0 +1,19 @@
+libs = lib2 \
+       lib3 \
+       lib4 \
+       lib5 \
+       lib6 \
+       lib7 \
+       lib8 \
+       lib9 \
+       lib10 \
+       lib11 \
+       lib12 \
+       Undetermined
+
+default : all
+
+$(libs) ::
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+all clean : $(libs)
