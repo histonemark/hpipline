@@ -1,8 +1,0 @@
-reps = @reps@
-
-default : all
-
-$(reps) ::
-	$(MAKE) -C $@ $(MAKECMDGOALS)
-
-all clean : $(reps)
