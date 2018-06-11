@@ -4,6 +4,7 @@
 prom_classes="A B C D E F G H"
 prom_libs=$(seq 12)
 mc_data_dir="/mnt/ant-login/mcorrales/HPIP"
+out_dir="/home/rcortini/work/CRG/projects/hpip/data/pbd"
 lib_dir=$mc_data_dir/libraries
 
 for prom_class in $prom_classes; do
@@ -34,7 +35,7 @@ for prom_class in $prom_classes; do
     done
 
     # check if output starcode directory exists, and if not create it
-    starcode_out_dir=$lib_dir/Starcoded_proms
+    starcode_out_dir=$out_dir/Starcoded_proms
     if ! test -e $starcode_out_dir; then
       mkdir -p $starcode_out_dir
     fi
