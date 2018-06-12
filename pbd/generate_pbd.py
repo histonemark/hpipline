@@ -21,7 +21,7 @@ def string_lib(prom_list, prom_lib, rel_ps) :
     return string
 
 # general variables
-pbd_datadir = '/home/rcortini/work/CRG/projects/hpip/data/pbd'
+pbd_datadir = '.'
 libs = range(1,13)
 prom_classes = ['A','B','C','D','E','F','G','H']
 

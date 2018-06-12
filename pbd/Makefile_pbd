@@ -1,0 +1,13 @@
+hpip_root = @HPIP_ROOT@
+pbd = pbd.txt
+starcoded_proms_dir := Starcoded_proms
+starcoded_proms = $(starcoded_proms_dir)/make_starcoded_proms.log
+generate_pbd = python @HPIP_ROOT@/hpipline/pbd/generate_pbd.py
+
+all : $(pbd)
+
+$(pbd) : $(starcoded_proms)
+	echo $@
+
+$(starcoded_proms) :
+	echo $@
