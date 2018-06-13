@@ -20,8 +20,14 @@ def string_lib(prom_list, prom_lib, rel_ps) :
         string += '%s%d:%.3f'%(prom_class,prom_lib,p)
     return string
 
+# check for proper invocation
+if len(sys.argv) < 2 :
+    print "Usage: generate_pbd <hpip_root>"
+    sys.exit(1)
+
 # general variables
-pbd_datadir = '.'
+hpip_root = sys.argv[1]
+pbd_datadir = '%s/data/pbd'%(hpip_root)
 libs = range(1,13)
 prom_classes = ['A','B','C','D','E','F','G','H']
 
