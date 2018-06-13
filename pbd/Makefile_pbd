@@ -1,13 +1,26 @@
+# general variables
 hpip_root = @HPIP_ROOT@
+
+# the main target is the promoter-barcode dictionary (pbd)
 pbd = pbd.txt
+
+# intermediate targets: the starcoded promoters
 starcoded_proms_dir := Starcoded_proms
-starcoded_proms = $(starcoded_proms_dir)/make_starcoded_proms.log
+
+# generate promoter-barcode dictionary script and log
 generate_pbd = python @HPIP_ROOT@/hpipline/pbd/generate_pbd.py
+generate_pbd_log = generate_pbd.log
+
+# generated starcoded promoter-barcode dictionary libraries and log
+generate_starcoded_pbd_libs = python @HPIP_ROOT@/hpipline/pbd/generate_starcoded_pbd_libs.sh
+generate_starcoded_pbd_libs_log = generate_starcoded_pbd_libs.log
+found_promoters = found_promoters.txt
+not_found_promoters = not_found_promoters.txt
 
 all : $(pbd)
 
-$(pbd) : $(starcoded_proms)
-	echo $@
+$(pbd) : $(found_promoters)
+	$(generate_pbd) $(hpip_root) > $(generate_pbd_log)
 
 $(starcoded_proms) :
-	echo $@
+	$(generate_starcoded_pbd_libs) $(hpip_root) > $(generate_starcoded_pbd_libs_log)

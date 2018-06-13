@@ -1,11 +1,26 @@
 #!/bin/bash
 
+# check for proper invocation
+if [ $# -ne 1 ]; then
+  echo "Usage: generate_starcoded_pbd_libs <hpip_root>" 1>&2
+  exit 1
+fi
+
+# get the HPIP root directory as the argument of the script
+hpip_root="$1"
+
+# generate input and output directory names
+out_dir="$hpip_root/data/pbd"
+lib_dir="$hpip_root/data/raw/libraries"
+
 # generate the combination of promoter names
 prom_classes="A B C D E F G H"
 prom_libs=$(seq 12)
-mc_data_dir="/mnt/ant-login/mcorrales/HPIP"
-out_dir="/home/rcortini/work/CRG/projects/hpip/data/pbd"
-lib_dir=$mc_data_dir/libraries
+
+# log files
+found="$out_dir/found_promoters.txt"
+not_found="$out_dir/not_found_promoters.txt"
+rm -f $found $not_found
 
 for prom_class in $prom_classes; do
 
@@ -20,7 +35,7 @@ for prom_class in $prom_classes; do
     datadir=$lib_dir/$libname/Data/Intensities/BaseCalls
     fastqs=$(find $datadir -name "$prom_name"*.fastq.gz)
     if [ -z "$fastqs" ]; then
-      echo "$prom_name not found"
+      echo "$prom_name" >> $not_found
       continue
     fi
 
@@ -29,7 +44,7 @@ for prom_class in $prom_classes; do
     # "-to_starcode.txt" suffix
     to_starcode="$datadir/$prom_name-to_starcode.txt"
     rm -rf $to_starcode
-    echo "Processing $prom_name"
+    echo "$prom_name" >> $found
     for fastq in $fastqs; do
       zcat $fastq | sed -n '2~4p' | grep -o '^.\{20\}'>> $to_starcode
     done
