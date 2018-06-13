@@ -32,7 +32,7 @@ $(stats_file) : $(sample_sheet)
 	bash $(hpip_root)/hpipline/pbd/fix_fastq_fnames.sh
 
 # CLEAN
-.PHONY : cleanstarcoded
+.PHONY : cleanstarcoded cleanfastq clean
 
 cleanstarcoded :
 	rm -rf $(promoters_starcoded)
