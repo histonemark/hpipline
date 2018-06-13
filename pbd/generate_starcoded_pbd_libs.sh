@@ -22,6 +22,12 @@ found="$out_dir/found_promoters.txt"
 not_found="$out_dir/not_found_promoters.txt"
 rm -f $found $not_found
 
+# check if output starcode directory exists, and if not create it
+starcode_out_dir=$out_dir/Starcoded_proms
+if ! test -e $starcode_out_dir; then
+  mkdir -p $starcode_out_dir
+fi
+
 for prom_class in $prom_classes; do
 
   # generate library name
@@ -48,12 +54,6 @@ for prom_class in $prom_classes; do
     for fastq in $fastqs; do
       zcat $fastq | sed -n '2~4p' | grep -o '^.\{20\}'>> $to_starcode
     done
-
-    # check if output starcode directory exists, and if not create it
-    starcode_out_dir=$out_dir/Starcoded_proms
-    if ! test -e $starcode_out_dir; then
-      mkdir -p $starcode_out_dir
-    fi
 
     # invoke starcode on the file kust created
     starcode_out="$starcode_out_dir/$prom_name-starcoded.txt"
