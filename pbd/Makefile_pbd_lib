@@ -1,0 +1,43 @@
+# general variables
+hpip_root = @HPIP_ROOT@
+libname = @LIBNAME@
+promoters = @PROMOTERS@
+
+# build directory names
+raw_datadir = $(hpip_root)/data/raw/libraries/$(libname)
+sample_sheet = $(raw_datadir)/SampleSheet.csv
+stats_file = Stats/Stats.json
+
+# build file names
+promoters_fastq = $(addsuffix .fastq.gz,$(promoters))
+promoters_starcoded = $(addsuffix -starcoded.txt,$(promoters))
+
+# TARGETS
+all : $(promoters_starcoded)
+
+# pattern rule: the '%' is the prefix of the file name (will be "PromoterB3" for
+# example), so that each starcoded file has its own fastq prerequisite
+%-starcoded.txt : %.fastq.gz
+	zcat $^ | sed -n '2~4p' | grep -o '^.\{20\}' |\
+	  starcode -t4 -d2 --print-clusters -o $@
+
+# NOTE: here I'm not writing directly the rule to generate the fastq files with
+# the bcl2fastq program, because otherwise if we'd invoke this makefile using a
+# multithreading option it would result it parallel executions of bcl2fastq,
+# which we don't want
+$(promoters_fastq) : $(stats_file)
+
+$(stats_file) : $(sample_sheet)
+	bcl2fastq -R $(raw_datadir) -o . --no-lane-splitting
+	bash $(hpip_root)/hpipline/pbd/fix_fastq_fnames.sh
+
+# CLEAN
+.PHONY : cleanstarcoded
+
+cleanstarcoded :
+	rm -rf $(promoters_starcoded)
+
+cleanfastq :
+	rm -rf *.fastq.gz Stats Reports
+
+clean : cleanstarcoded cleanfastq

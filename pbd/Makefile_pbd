@@ -5,22 +5,24 @@ hpip_root = @HPIP_ROOT@
 pbd = pbd.txt
 
 # intermediate targets: the starcoded promoters
-starcoded_proms_dir := Starcoded_proms
+libs_dir = pbd_libs
+libs = $(libs_dir)/HPIP_bcds_A1toA12 \
+       $(libs_dir)/HPIP_bcds_B1toB12 \
+       $(libs_dir)/HPIP_bcds_C1toC12 \
+       $(libs_dir)/HPIP_bcds_D1toD12 \
+       $(libs_dir)/HPIP_bcds_E1toE12 \
+       $(libs_dir)/HPIP_bcds_F1toF12 \
+       $(libs_dir)/HPIP_bcds_G1toG12 \
+       $(libs_dir)/HPIP_bcds_H1toH12
 
 # generate promoter-barcode dictionary script and log
 generate_pbd = python @HPIP_ROOT@/hpipline/pbd/generate_pbd.py
 generate_pbd_log = generate_pbd.log
 
-# generated starcoded promoter-barcode dictionary libraries and log
-generate_starcoded_pbd_libs = python @HPIP_ROOT@/hpipline/pbd/generate_starcoded_pbd_libs.sh
-generate_starcoded_pbd_libs_log = generate_starcoded_pbd_libs.log
-found_promoters = found_promoters.txt
-not_found_promoters = not_found_promoters.txt
-
 all : $(pbd)
 
-$(pbd) : $(found_promoters)
-	$(generate_pbd) $(hpip_root) > $(generate_pbd_log)
+$(pbd) : $(libs)
+	echo "$(generate_pbd) $(hpip_root) > $(generate_pbd_log)"
 
-$(starcoded_proms) :
-	$(generate_starcoded_pbd_libs) $(hpip_root) > $(generate_starcoded_pbd_libs_log)
+$(libs) ::
+	$(MAKE) -C $@ $(MAKECMDGOALS)
