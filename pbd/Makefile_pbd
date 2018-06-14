@@ -22,7 +22,7 @@ generate_pbd_log = generate_pbd.log
 all : $(pbd)
 
 $(pbd) : $(libs)
-	echo "$(generate_pbd) $(hpip_root) > $(generate_pbd_log)"
+	$(generate_pbd) $(hpip_root)
 
 $(libs) ::
 	$(MAKE) -C $@ $(MAKECMDGOALS)

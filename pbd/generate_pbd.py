@@ -42,9 +42,12 @@ for lib in libs :
     d = {}
     for prom_class in prom_classes :
 
-        # build promoter name and file name
+        # build promoter name
         prom_name = '%s%d'%(prom_class,lib)
-        fname = '%s/Starcoded_proms/Promoter%s-starcoded.txt'%(pbd_datadir,prom_name)
+
+        # build the input file name
+        lib_dir = '%s/pbd_libs/HPIP_bcds_%s1to%s12'%(pbd_datadir,prom_class,prom_class)
+        fname = '%s/Promoter%s-starcoded.txt'%(lib_dir,prom_name)
         counts = 0
         # check if file exists, and if not skip it
         if not os.path.exists(fname) :
