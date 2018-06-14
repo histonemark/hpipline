@@ -1,6 +1,13 @@
 #!/bin/bash
 
-hpip_root=$HOME/work/CRG/projects/hpip
+# check for proper invocation
+if [ $# -ne 1 ]; then
+  echo "Usage: jobs_generate <hpip_root>" 1>&2
+  exit 1
+fi
+hpip_root=$1
+
+# generate directory names
 pbd_datadir=$pbd_datadir/data/pbd
 raw_datadir=$hpip_root/data/raw/libraries
 
