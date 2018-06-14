@@ -1,7 +1,7 @@
 #!/bin/bash
 
 hpip_root=$HOME/work/CRG/projects/hpip
-pbd_datadir=$HOME/work/CRG/projects/hpip/data/pbd
+pbd_datadir=$pbd_datadir/data/pbd
 raw_datadir=$hpip_root/data/raw/libraries
 
 # input makefiles
