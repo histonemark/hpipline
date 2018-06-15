@@ -1,0 +1,35 @@
+hpip_root=@HPIP_ROOT@
+run=@RUN@
+rep=@REP@
+
+idx_starcoded = idx_starcoded.txt
+undetermined = Undetermined_S0_R1_001.fastq.gz
+raw_datadir = $(hpip_root)/data/raw/$(run)/HPIP_$(run)_$(rep)
+noDNA_sample_sheet=noDNA_SampleSheet.csv
+
+all : $(idx_starcoded)
+
+$(idx_starcoded) : $(undetermined)
+	zcat $^ | sed -n '1~4p' | grep -o '[GATC]*$$' | starcode -d1 -t4 > $(idx_starcoded)
+
+$(undetermined) : $(noDNA_sample_sheet)
+	bcl2fastq -R $(raw_datadir) -o . --no-lane-splitting --sample-sheet $^
+
+$(noDNA_sample_sheet) :
+	echo "Making $(run) noDNA sample sheet"
+	@rm -rf $(noDNA_sample_sheet)
+	@echo "[Data]" >> $(noDNA_sample_sheet)
+	@echo "Lane,SampleID,SampleName,index,index2" >> $(noDNA_sample_sheet)
+	@echo "1,1,noDNA,GGGGGG" >> $(noDNA_sample_sheet)
+	@echo "2,1,noDNA,GGGGGG" >> $(noDNA_sample_sheet)
+	@echo "3,1,noDNA,GGGGGG" >> $(noDNA_sample_sheet)
+	@echo "4,1,noDNA,GGGGGG" >> $(noDNA_sample_sheet)
+
+# clean targets
+.PHONY : clean
+
+clean :
+	rm -rf Stats Reports \
+	  *.fastq.gz \
+	  $(noDNA_sample_sheet) \
+	  $(idx_starcoded)

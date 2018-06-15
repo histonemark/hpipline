@@ -2,7 +2,12 @@ libs = @libs@
 
 default : all
 
-$(libs) ::
+noDNA = cDNA_noDNA gDNA_noDNA iPCR_noDNA
+
+$(libs) :: $(noDNA)
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+$(noDNA) ::
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
 all clean : $(libs)
