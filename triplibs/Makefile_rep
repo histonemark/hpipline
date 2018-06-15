@@ -2,9 +2,13 @@ libs = @libs@
 
 default : all
 
-noDNA = cDNA_noDNA gDNA_noDNA iPCR_noDNA
+runs = cDNA gDNA iPCR
+noDNA = $(addprefix _noDNA, $(runs))
 
-$(libs) :: $(noDNA)
+$(libs) :: $(runs)
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+$(runs) :: $(noDNA)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
 $(noDNA) ::

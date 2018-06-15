@@ -19,6 +19,7 @@ makefile_top=$hpipline_dir/Makefile_top
 makefile_rep=$hpipline_dir/Makefile_rep
 makefile_lib=$hpipline_dir/Makefile_lib
 makefile_noDNA=$hpipline_dir/Makefile_noDNA
+makefile_run=$hpipline_dir/Makefile_run
 
 # build library names
 libnames=""
@@ -56,6 +57,13 @@ for rep in $reps; do
     # the directory associated to the regular run
     run_dir="$triplibs_dir/$rep/$run"
     mkdir -p $run_dir
+
+    # run Makefile creation
+    cat $makefile_run |\
+      sed -e s,@HPIP_ROOT@,$hpip_root,g |\
+      sed -e s,@RUN@,$run, |\
+      sed -e s,@REP@,$rep, |\
+    tee > $run_dir/Makefile
 
   done
 
