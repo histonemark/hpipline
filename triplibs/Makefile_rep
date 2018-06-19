@@ -1,17 +1,22 @@
 libs = @libs@
 
-default : all
+all : $(libs)
 
+# targets
 runs = cDNA gDNA iPCR
 noDNA = $(addsuffix _noDNA, $(runs))
+force_look = force_look
 
-$(libs) :: $(runs)
+$(libs) : $(runs) $(force_look)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
-$(runs) :: $(noDNA)
+$(runs) : $(noDNA) $(force_look)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
-$(noDNA) ::
+$(noDNA) : $(force_look)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+force_look :
+	@true
 
 all clean : $(libs)
