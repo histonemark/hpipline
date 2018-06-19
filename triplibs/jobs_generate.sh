@@ -7,12 +7,13 @@ if [ $# -ne 1 ]; then
 fi
 hpip_root=$1
 
-# general variables
+# general variables: TODO verify generality
+genome=$hpip_root/data/dm4R6/dmel-all-chromosome-r6.15.fasta
 triplibs_dir=$hpip_root/data/triplibs
 hpipline_dir=$hpip_root/hpipline/triplibs
 reps="rep1 rep2"
 runs="iPCR cDNA gDNA"
-libs=$(seq 12)
+libs=$(seq 2 12)
 
 # get source Makefiles names
 makefile_top=$hpipline_dir/Makefile_top
@@ -68,7 +69,8 @@ for rep in $reps; do
   done
 
   # cycle on the libraries
-  for libname in $libnames; do
+  for lib in $libs; do
+    libname="lib$lib"
 
     # the directory associated to the library
     lib_dir="$rep_dir/$libname"
@@ -77,7 +79,8 @@ for rep in $reps; do
     # library-level Makefile creation
     cat $makefile_lib |\
       sed -e s,@HPIP_ROOT@,$hpip_root,g |\
-      sed -e s,@LIBNAME@,$libname,g |\
+      sed -e s,@LIB@,$lib,g |\
+      sed -e s,@GENOME@,$genome,g |\
     tee > $rep_dir/$libname/Makefile
   done
 done

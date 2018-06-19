@@ -4,10 +4,10 @@ SHELL:=/bin/bash
 SPIKE=CATGATTACCCTGTTATC
 
 # input files
-libname=@LIBNAME@
+lib=@LIB@
 hpip_root=@HPIP_ROOT@
 prom_bcd_dict=$(hpip_root)/pbd/pbd.txt
-genome=$(hpip_root)/dm4R6/dmel-all-chromosome-r6.15.fasta
+genome=@GENOME@
 
 # build file names based on base names
 iPCR_fwd=iPCR-fwd.fastq.gz
@@ -60,6 +60,22 @@ cleanintermediate :
 	  $(INTERMEDIATE_GDNA)
 
 clean : cleanintermediate cleanlog
+
+####################################
+# SYMLINKS TO INPUT FASTQ DATA FILES
+####################################
+
+$(iPCR_fwd) :
+	ln -s ../iPCR/iPCR$(lib)*R1*.fastq.gz $@
+
+$(iPCR_rev) :
+	ln -s ../iPCR/iPCR$(lib)*R2*.fastq.gz $@
+
+$(cDNA_fastq) :
+	ln -s ../cDNA/cDNA$(lib)*R1*.fastq.gz $@
+
+$(gDNA_fastq) :
+	ln -s ../gDNA/gDNA$(lib)*R1*.fastq.gz $@
 
 ####################################
 # MAP READS
