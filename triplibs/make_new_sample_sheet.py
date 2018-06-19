@@ -94,6 +94,4 @@ with open(new_ss, 'w') as f :
         for sampleID in sampleIDs :
             f.write('%d,%s,%s%s,%s\n'%(lane, sampleID, run, sampleID,
                                        idx_starcoded[sampleID][0]))
-
-
-
+        f.write('%d,%s,noDNA,GGGGGG\n'%(lane, sampleID+1)
