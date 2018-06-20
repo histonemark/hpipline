@@ -1,55 +1,67 @@
 #!/bin/python
 import os, sys, struct
 
-def file_read_nth_line(n, fname, idx_fname) :
-    # Try to read the n-th index from the idx list. With an 
-    # 'IndexError' it means that the original file does not have
-    # that number of lines
-    with open(idx_fname, 'rb') as f :
-        f.seek(n*8, os.SEEK_SET)
-        i_binary = f.read(8)
+class PBD :
+    def __init__(self, hpip_root) :
+        # set input file names
+        pbd_fname = '%s/data/pbd/pbd.txt'%(hpip_root)
+        pbd_idx = '%s.idx'%(pbd_fname)
         
+        # open the index and the pdb file
+        self.pbd = open(pbd_fname, 'r')
+        self.idx = open(pbd_idx, 'rb')
+
+        # get the number of lines in the pbd by looking
+        # at the last value stored in the index
+        self.idx.seek(-8, os.SEEK_END)
+        self.N = struct.unpack('Q', self.idx.read(8))[0]
+
+    def read_nth_line(self, n) :
+        # seek the index at position 'n*8', because the information
+        # is stored in chunks of 8 bytes of size
+        self.idx.seek(n*8, os.SEEK_SET)
+        i_binary = self.idx.read(8)
+
         # if 'i_binary' is an empty string, it means we reached
         # the end of the file: that is, the original file did not
         # have that number of lines
         if i_binary == '' :
             return None
-        
+
         # if not, then we can unpack the string and convert it to a
         # python integer, which will allow us to read from the
         # correct line in the original file (i)
         i = struct.unpack('Q', i_binary)[0]
-    
-    # read original file and jump to the correct line
-    with open(fname, 'r') as f :
-        f.seek(i, os.SEEK_SET)
-        return f.readline()
 
-def findbcd(bcd, pbd_fname, pbd_idx) :
+        # read original file and jump to the correct line
+        self.pbd.seek(i, os.SEEK_SET)
+        return self.pbd.readline()
     
-    # open the pbd index and read the value at the last position,
-    # which by convention corresponds to the number of lines in the
-    # original file
-    with open(pbd_idx, 'rb') as f :
-        f.seek(-8, os.SEEK_END)
-        N = struct.unpack('Q', f.read(8))[0]
-    
-    # start the iterative search
-    range_hi = N-1
-    range_lo = 0
-    while range_lo < range_hi-1 :
-        mid = (range_hi+range_lo)//2
-        line = file_read_nth_line(mid, pbd_fname, pbd_idx)
-        this_bcd = line[:20]
-        if this_bcd < bcd :
-            range_lo = mid
-        elif this_bcd > bcd :
-            range_hi = mid
-        else :
-            return line
-    
-    # if we are here, then the barcode was not found
-    return None
+    def findbcd(self, bcd) :
+        # open the pbd index and read the value at the last position,
+        # which by convention corresponds to the number of lines in the
+        # original file
+
+        # start the iterative search
+        range_hi = self.N-1
+        range_lo = 0
+        while range_lo < range_hi-1 :
+            mid = (range_hi+range_lo)//2
+            line = self.read_nth_line(mid)
+            this_bcd = line[:20]
+            if this_bcd < bcd :
+                range_lo = mid
+            elif this_bcd > bcd :
+                range_hi = mid
+            else :
+                return line
+
+        # if we are here, then the barcode was not found
+        return None
+
+    def __del__(self) :
+        self.pbd.close()
+        self.idx.close()
 
 def read_input(fin) :
     bcd_list = []
@@ -57,10 +69,10 @@ def read_input(fin) :
         bcd_list.append(line.strip())
     return bcd_list
 
-def print_bcd(bcd, pbd_fname, pbd_idx) :
-    line = findbcd(bcd, pbd_fname, pbd_idx)
+def print_bcd(bcd, pbd) :
+    line = pbd.findbcd(bcd)
     if line is None :
-        print "%s\tNOT FOUND"%(bcd)
+        return
     else :
         print line.strip()
 
@@ -81,20 +93,19 @@ if __name__ == '__main__' :
     elif len(sys.argv) == 3 :
         fname = sys.argv[1]
         hpip_root = sys.argv[2]
-        if os.path.exists(fin) :
+        if os.path.exists(fname) :
             fin = open(fname, 'r')
             single_bcd_mode = False
         else :
             single_bcd_mode = True
 
-    # build file names
-    pbd_fname = '%s/data/pbd/pbd.txt'%(hpip_root)
-    pbd_idx = '%s.idx'%(pbd_fname)
+    # init the PBD
+    pbd = PBD(hpip_root)
 
     if not single_bcd_mode :
         bcds = read_input(fin)
         for bcd in bcds :
-            print_bcd(bcd, pbd_fname, pbd_idx)
+            print_bcd(bcd, pbd)
         fin.close()
     else :
-        print_bcd(bcd, pbd_fname, pbd_idx)
+        print_bcd(bcd, pbd)
