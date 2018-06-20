@@ -51,17 +51,50 @@ def findbcd(bcd, pbd_fname, pbd_idx) :
     # if we are here, then the barcode was not found
     return None
 
+def read_input(fin) :
+    bcd_list = []
+    for line in fin :
+        bcd_list.append(line.strip())
+    return bcd_list
+
+def print_bcd(bcd, pbd_fname, pbd_idx) :
+    line = findbcd(bcd, pbd_fname, pbd_idx)
+    if line is None :
+        print "%s\tNOT FOUND"%(bcd)
+    else :
+        print line.strip()
+
 if __name__ == '__main__' :
     # check for proper invocation
     if len(sys.argv) < 2 :
         print "Usage: findbcd <bcd> <hpip_root>"
+        sys.exit(1)
 
-    # get parameters from command line
-    bcd = sys.argv[1]
-    hpip_root = sys.argv[2]
+    # get parameters from command line and decide whether we are in "single
+    # barcode mode" or the user passed a file or standard input, in which case
+    # we read the barcode list (one per line) and invoke the finder for each of
+    # them
+    if len(sys.argv) == 2 :
+        fin = sys.stdin
+        hpip_root = sys.argv[1]
+        single_bcd_mode = False
+    elif len(sys.argv) == 3 :
+        fname = sys.argv[1]
+        hpip_root = sys.argv[2]
+        if os.path.exists(fin) :
+            fin = open(fname, 'r')
+            single_bcd_mode = False
+        else :
+            single_bcd_mode = True
 
     # build file names
     pbd_fname = '%s/data/pbd/pbd.txt'%(hpip_root)
     pbd_idx = '%s.idx'%(pbd_fname)
 
-    print findbcd(bcd, pbd_fname, pbd_idx).strip()
+    if not single_bcd_mode :
+        bcds = read_input(fin)
+        for bcd in bcds :
+            print_bcd(bcd, pbd_fname, pbd_idx)
+        fin.close()
+    else :
+        print_bcd(bcd, pbd_fname, pbd_idx)
