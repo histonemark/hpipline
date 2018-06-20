@@ -16,13 +16,13 @@ libs = $(libs_dir)/HPIP_bcds_A1toA12 \
        $(libs_dir)/HPIP_bcds_H1toH12
 
 # generate promoter-barcode dictionary script and log
-generate_pbd = python @HPIP_ROOT@/hpipline/pbd/generate_pbd.py
+generate_pbd = @HPIP_ROOT@/hpipline/pbd/generate_pbd.py
 generate_pbd_log = generate_pbd.log
 
 all : $(pbd)
 
-$(pbd) : $(libs)
-	$(generate_pbd) $(hpip_root)
+$(pbd) : $(libs) $(generate_pbd)
+	python $(generate_pbd) $(hpip_root)
 
 $(libs) ::
 	$(MAKE) -C $@ $(MAKECMDGOALS)
