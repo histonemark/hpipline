@@ -1,8 +1,12 @@
 # general variables
 hpip_root = @HPIP_ROOT@
 
+# force_look
+force_look = force_look
+
 # the main target is the promoter-barcode dictionary (pbd)
 pbd = pbd.txt
+pbd_raw = $(pbd).raw
 
 # intermediate targets: the starcoded promoters
 libs_dir = pbd_libs
@@ -21,8 +25,14 @@ generate_pbd_log = generate_pbd.log
 
 all : $(pbd)
 
-$(pbd) : $(libs) $(generate_pbd)
+$(pbd_raw) : $(libs) $(generate_pbd)
 	python $(generate_pbd) $(hpip_root)
 
-$(libs) ::
+$(pbd) : $(pbd_raw)
+	sort $^ > $@
+
+$(libs) : $(force_look)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+$(force_look) :
+	@true

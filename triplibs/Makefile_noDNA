@@ -13,7 +13,7 @@ $(idx_starcoded) : $(undetermined)
 	zcat $^ | sed -n '1~4p' | grep -o '[GATC]*$$' | starcode -d1 -t4 > $(idx_starcoded)
 
 $(undetermined) : $(noDNA_sample_sheet)
-	bcl2fastq -R $(raw_datadir) -o . --no-lane-splitting --sample-sheet $^ > bcl2fastq.log
+	bcl2fastq -R $(raw_datadir) -o . --no-lane-splitting --sample-sheet $^
 
 $(noDNA_sample_sheet) :
 	echo "Making $(run) noDNA sample sheet"

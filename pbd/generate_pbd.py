@@ -73,7 +73,7 @@ for lib in libs :
     prom_bcd_dict[lib] = d
 
 # STEP 2: compute the relative probabilities and output the dictionary to a file
-prom_bcd_fname = '%s/pbd.txt'%(pbd_datadir)
+prom_bcd_fname = '%s/pbd.txt.raw'%(pbd_datadir)
 with open(prom_bcd_fname,'w') as f :
 
     # iterate through all the libraries

@@ -8,7 +8,7 @@ fi
 hpip_root=$1
 
 # generate directory names
-pbd_datadir=$pbd_datadir/data/pbd
+pbd_datadir=$hpip_root/data/pbd
 raw_datadir=$hpip_root/data/raw/libraries
 
 # input makefiles
