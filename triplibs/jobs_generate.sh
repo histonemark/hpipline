@@ -38,6 +38,8 @@ for rep in $reps; do
 
   # replicate-level Makefile creation
   cat $makefile_rep |\
+    sed -e s,@HPIP_ROOT@,$hpip_root,g |\
+    sed -e s,@REP@,$rep, |\
     sed -e s,@libs@,"$libnames",g |\
   tee > $rep_dir/Makefile
 

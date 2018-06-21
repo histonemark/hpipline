@@ -1,11 +1,17 @@
+hpip_root = @HPIP_ROOT@
 libs = @libs@
+rep = @REP@
 
-all : $(libs)
+# programs
+make_libs_statistics = $(hpip_root)/hpipline/triplibs/make_libs_statistics.sh
 
 # targets
 runs = cDNA gDNA iPCR
 noDNA = $(addsuffix _noDNA, $(runs))
+libs_statistics = libs_statistics.txt
 force_look = force_look
+
+all : $(libs) $(libs_statistics)
 
 $(libs) : $(runs) $(force_look)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
@@ -15,6 +21,9 @@ $(runs) : $(noDNA) $(force_look)
 
 $(noDNA) : $(force_look)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+$(libs_statistics) : $(libs) $(force_look)
+	bash $(make_libs_statistics) $(hpip_root) $(rep)
 
 force_look :
 	@true
