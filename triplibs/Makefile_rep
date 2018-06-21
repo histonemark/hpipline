@@ -23,6 +23,8 @@ $(noDNA) : $(force_look)
 force_look :
 	@true
 
+$(libs_stats) : $(libs)
+
 $(libs_statistics) : $(libs_stats)
 	echo "# iPCR in_cDNA in_gDNA in_both" > $@
-	cat $^ >> $@
+	cat $(libs_stats) >> $@

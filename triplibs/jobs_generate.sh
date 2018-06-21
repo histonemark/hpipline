@@ -73,7 +73,7 @@ for rep in $reps; do
 
   # cycle on the libraries
   for lib in $libs; do
-    if [[ $lib = *"lib"* ]]; then
+    if [ "$lib" != "undetermined" ] && [ "$lib" != "alltogether" ]; then
       libname="lib$lib"
     else
       libname=$lib
