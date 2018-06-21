@@ -9,13 +9,11 @@ hpip_root=@HPIP_ROOT@
 prom_bcd_dict=$(hpip_root)/pbd/pbd.txt
 genome=@GENOME@
 
-# build file names based on base names
+# intermediate files
 iPCR_fwd=iPCR-fwd.fastq.gz
 iPCR_rev=iPCR-rev.fastq.gz
 cDNA_fastq=cDNA.fastq.gz
 gDNA_fastq=gDNA.fastq.gz
-
-# intermediate files
 iPCR_starcode=iPCR-starcode.txt
 iPCR_counts_dict=iPCR-counts_dict.p
 iPCR_sam=iPCR.sam
@@ -23,6 +21,9 @@ cDNA_starcode=cDNA-starcode.txt
 cDNA_spikes_starcode=cDNA-spikes_starcode.txt
 gDNA_starcode=gDNA-starcode.txt
 gDNA_spikes_starcode=gDNA-spikes_starcode.txt
+
+# library statistics file
+lib_stats = $(lib).stats
 
 # groups of files
 INTERMEDIATE_IPCR=\
@@ -47,10 +48,24 @@ starcode=starcode -t4
 seeq=seeq
 extract_reads_from_fastq=sed -n '2~4p'
 extract_bcd=grep -o '^.\{20\}'
+make_libs_statistics = $(hpip_root)/hpipline/triplibs/make_libs_statistics.py
 
 .PHONY : all spikes clean cleanintermediate cleanlog
 
-all : $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
+# conditional variable names
+ifeq ($(lib),undetermined)
+  iPCR_name = Undetermined
+  cDNA_name = Undetermined
+  gDNA_name = Undetermined
+  lib_stats = undetermined.stats
+else
+  iPCR_name=iPCR$(lib)
+  cDNA_name=cDNA$(lib)
+  gDNA_name=gDNA$(lib)
+  lib_stats = lib$(lib).stats
+endif
+
+all : $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode) $(lib_stats)
 
 spikes : $(cDNA_spikes_starcode) $(gDNA_spikes_starcode)
 
@@ -68,16 +83,6 @@ clean : cleanintermediate cleanlog
 ####################################
 # SYMLINKS TO INPUT FASTQ DATA FILES
 ####################################
-ifeq ($(lib),undetermined)
-  iPCR_name = Undetermined
-  cDNA_name = Undetermined
-  gDNA_name = Undetermined
-else
-  iPCR_name=iPCR$(lib)
-  cDNA_name=cDNA$(lib)
-  gDNA_name=gDNA$(lib)
-endif
-
 $(iPCR_fwd) :
 	ln -s ../iPCR/$(iPCR_name)*R1*.fastq.gz $@
 
@@ -125,3 +130,6 @@ $(iPCR_starcode) : $(iPCR_sam)
 	  $(extract_reads_from_fastq) |\
 	  $(seeq) -rd2 $(SPIKE) |\
 	  $(starcode) -d2 1> $@ 2> $(subst .txt,.log,$@)
+
+$(lib_stats) : $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
+	python $(make_libs_statistics) $^ $@
