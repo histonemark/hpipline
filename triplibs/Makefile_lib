@@ -97,25 +97,18 @@ $(iPCR_starcode) : $(iPCR_sam)
 ####################################
 # STARCODE ON FASTQ
 ####################################
-$(gDNA_starcode) : $(gDNA_fastq)
-	zcat $(gDNA_fastq) |\
+%-starcode.txt : %.fastq.gz
+	zcat $^ |\
 	  $(extract_reads_from_fastq) |\
 	  $(seeq) -i -d2 $(SPIKE) |\
 	  $(extract_bcd) |\
-	  $(starcode) -d2 --print-clusters 1> $(gDNA_starcode) 2> $(subst .txt,.log,$@)
+	  $(starcode) -d2 --print-clusters 1> $@ 2> $(subst .txt,.log,$@)
 
 $(gDNA_spikes_starcode) : $(gDNA_fastq)
 	zcat $(gDNA_fastq) |\
 	$(extract_reads_from_fastq) |\
 	  $(seeq) -rd2 $(SPIKE) $(gDNA_fastq) |\
 	  $(starcode) -d2 1> $(gDNA_spikes_starcode) 2> $(subst .txt,.log,$@)
-
-$(cDNA_starcode) : $(cDNA_fastq)
-	zcat $(cDNA_fastq) |\
-	$(extract_reads_from_fastq) |\
-	  $(seeq) -i -d2 $(SPIKE) |\
-	  $(extract_bcd) |\
-	  $(starcode) -d2 --print-clusters 1> $(cDNA_starcode) 2> $(subst .txt,.log,$@)
 
 $(cDNA_spikes_starcode) : $(cDNA_fastq)
 	zcat $(cDNA_fastq) |\
