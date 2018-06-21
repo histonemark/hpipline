@@ -26,15 +26,19 @@ gDNA_spikes_starcode=gDNA-spikes_starcode.txt
 
 # groups of files
 INTERMEDIATE_IPCR=\
+	     $(iPCR_fwd)\
+	     $(iPCR_rev)\
 	     $(iPCR_sam)\
 	     $(iPCR_counts_dict)\
 	     $(iPCR_starcode)
 
 INTERMEDIATE_CDNA=\
+	     $(cDNA_fastq)\
 	     $(cDNA_starcode)\
 	     $(cDNA_spikes_starcode)
 
 INTERMEDIATE_GDNA=\
+	     $(gDNA_fastq)\
 	     $(gDNA_starcode)\
 	     $(gDNA_spikes_starcode)
 
@@ -64,18 +68,27 @@ clean : cleanintermediate cleanlog
 ####################################
 # SYMLINKS TO INPUT FASTQ DATA FILES
 ####################################
+ifeq ($(lib),undetermined)
+  iPCR_name = Undetermined
+  cDNA_name = Undetermined
+  gDNA_name = Undetermined
+else
+  iPCR_name=iPCR$(lib)
+  cDNA_name=cDNA$(lib)
+  gDNA_name=gDNA$(lib)
+endif
 
 $(iPCR_fwd) :
-	ln -s ../iPCR/iPCR$(lib)*R1*.fastq.gz $@
+	ln -s ../iPCR/$(iPCR_name)*R1*.fastq.gz $@
 
 $(iPCR_rev) :
-	ln -s ../iPCR/iPCR$(lib)*R2*.fastq.gz $@
+	ln -s ../iPCR/$(iPCR_name)*R2*.fastq.gz $@
 
 $(cDNA_fastq) :
-	ln -s ../cDNA/cDNA$(lib)*R1*.fastq.gz $@
+	ln -s ../cDNA/$(cDNA_name)*R1*.fastq.gz $@
 
 $(gDNA_fastq) :
-	ln -s ../gDNA/gDNA$(lib)*R1*.fastq.gz $@
+	ln -s ../gDNA/$(gDNA_name)*R1*.fastq.gz $@
 
 ####################################
 # MAP READS

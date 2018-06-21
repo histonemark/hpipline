@@ -15,19 +15,20 @@ reps="rep1 rep2"
 runs="iPCR cDNA gDNA"
 libs=$(seq 2 12)
 
+# build library names
+libnames=""
+for lib in $libs; do
+  libnames="$libnames lib$lib"
+done
+libs="$libs undetermined"
+libnames="$libnames undetermined"
+
 # get source Makefiles names
 makefile_top=$hpipline_dir/Makefile_top
 makefile_rep=$hpipline_dir/Makefile_rep
 makefile_lib=$hpipline_dir/Makefile_lib
 makefile_noDNA=$hpipline_dir/Makefile_noDNA
 makefile_run=$hpipline_dir/Makefile_run
-
-# build library names
-libnames=""
-for lib in $libs; do
-  libname="lib$lib"
-  libnames="$libnames $libname"
-done
 
 # cycle on the replicates
 for rep in $reps; do
@@ -72,7 +73,11 @@ for rep in $reps; do
 
   # cycle on the libraries
   for lib in $libs; do
-    libname="lib$lib"
+    if [ "$lib" == "undetermined" ]; then
+      libname="undetermined"
+    else
+      libname="lib$lib"
+    fi
 
     # the directory associated to the library
     lib_dir="$rep_dir/$libname"
