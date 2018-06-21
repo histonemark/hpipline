@@ -54,14 +54,19 @@ make_libs_statistics = $(hpip_root)/hpipline/triplibs/make_libs_statistics.py
 
 # conditional variable names
 ifeq ($(lib),undetermined)
-  iPCR_name = Undetermined
-  cDNA_name = Undetermined
-  gDNA_name = Undetermined
+  iPCR_name = /Undetermined
+  cDNA_name = /Undetermined
+  gDNA_name = /Undetermined
   lib_stats = undetermined.stats
+else ifeq ($(lib),alltogether)
+  iPCR_name = _noDNA/Undetermined
+  cDNA_name = _noDNA/Undetermined
+  gDNA_name = _noDNA/Undetermined
+  lib_stats = alltogether.stats
 else
-  iPCR_name=iPCR$(lib)
-  cDNA_name=cDNA$(lib)
-  gDNA_name=gDNA$(lib)
+  iPCR_name=/iPCR$(lib)
+  cDNA_name=/cDNA$(lib)
+  gDNA_name=/gDNA$(lib)
   lib_stats = lib$(lib).stats
 endif
 
@@ -84,16 +89,16 @@ clean : cleanintermediate cleanlog
 # SYMLINKS TO INPUT FASTQ DATA FILES
 ####################################
 $(iPCR_fwd) :
-	ln -s ../iPCR/$(iPCR_name)*R1*.fastq.gz $@
+	ln -s ../iPCR$(iPCR_name)*R1*.fastq.gz $@
 
 $(iPCR_rev) :
-	ln -s ../iPCR/$(iPCR_name)*R2*.fastq.gz $@
+	ln -s ../iPCR$(iPCR_name)*R2*.fastq.gz $@
 
 $(cDNA_fastq) :
-	ln -s ../cDNA/$(cDNA_name)*R1*.fastq.gz $@
+	ln -s ../cDNA$(cDNA_name)*R1*.fastq.gz $@
 
 $(gDNA_fastq) :
-	ln -s ../gDNA/$(gDNA_name)*R1*.fastq.gz $@
+	ln -s ../gDNA$(gDNA_name)*R1*.fastq.gz $@
 
 ####################################
 # MAP READS

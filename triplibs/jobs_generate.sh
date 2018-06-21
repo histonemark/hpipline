@@ -20,8 +20,8 @@ libnames=""
 for lib in $libs; do
   libnames="$libnames lib$lib"
 done
-libs="$libs undetermined"
-libnames="$libnames undetermined"
+libs="$libs undetermined alltogether"
+libnames="$libnames undetermined alltogether"
 
 # get source Makefiles names
 makefile_top=$hpipline_dir/Makefile_top
@@ -73,10 +73,10 @@ for rep in $reps; do
 
   # cycle on the libraries
   for lib in $libs; do
-    if [ "$lib" == "undetermined" ]; then
-      libname="undetermined"
-    else
+    if [[ $lib = *"lib"* ]]; then
       libname="lib$lib"
+    else
+      libname=$lib
     fi
 
     # the directory associated to the library
