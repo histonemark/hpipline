@@ -10,7 +10,7 @@ noDNA_sample_sheet=noDNA_SampleSheet.csv
 all : $(idx_starcoded)
 
 $(idx_starcoded) : $(undetermined)
-	zcat $^ | sed -n '1~4p' | grep -o '[GATC]*$$' | starcode -d1 -t4 > $(idx_starcoded)
+	zcat $^ | sed -n '1~4p' | grep -o '[GATCN]*$$' | starcode -d1 -t4 > $(idx_starcoded)
 
 $(undetermined) : $(noDNA_sample_sheet)
 	bcl2fastq -R $(raw_datadir) -o . --no-lane-splitting --sample-sheet $^
