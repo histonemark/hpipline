@@ -48,7 +48,7 @@ def parse_fastq(fastq_fname) :
                 continue
     return d
 
-def parse_starcode(starcode_fname) :
+def parse_starcode(starcode_fname, inverse=False) :
     """
     Parses the output of a starcode run that was run with --print-clusters.
     Returns two dictionaries: `counts`, which contains the number of reads
@@ -72,8 +72,13 @@ def parse_starcode(starcode_fname) :
             can, cnts, bcds = line.strip().split()
 
             # fill in the 'canonical' dictionary
+            if inverse :
+                canonical[can] = []
             for bcd in bcds.split(','):
-                canonical[bcd] = can
+                if inverse :
+                    canonical[can].append(bcd)
+                else :
+                    canonical[bcd] = can
 
             # fill in the 'counts' dictionary
             counts[can] = cnts
@@ -126,7 +131,7 @@ def parse_mapped(mapped_fname) :
 
                 # fill the dictionary with the information
                 ident = (chrom, pos, strand)
-                if not mapped.has_key(canonical) :
+                if not mapped.has_key(bcd) :
                     mapped[bcd] = [ident]
                 else :
                     mapped[bcd].append(ident)
