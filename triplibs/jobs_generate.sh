@@ -20,8 +20,8 @@ libnames=""
 for lib in $libs; do
   libnames="$libnames lib$lib"
 done
-libs="$libs undetermined alltogether"
-libnames="$libnames undetermined alltogether"
+libs="$libs undetermined"
+libnames="$libnames undetermined"
 
 # get source Makefiles names
 makefile_top=$hpipline_dir/Makefile_top
