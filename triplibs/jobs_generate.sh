@@ -7,7 +7,7 @@ if [ $# -ne 1 ]; then
 fi
 hpip_root=$1
 
-# general variables: TODO verify generality
+# general variables
 genome=$hpip_root/data/dm4R6/dmel-all-chromosome-r6.15.fasta
 triplibs_dir=$hpip_root/data/triplibs
 hpipline_dir=$hpip_root/hpipline/triplibs
@@ -27,6 +27,11 @@ makefile_rep=$hpipline_dir/Makefile_rep
 makefile_lib=$hpipline_dir/Makefile_lib
 makefile_noDNA=$hpipline_dir/Makefile_noDNA
 makefile_run=$hpipline_dir/Makefile_run
+
+# top-level Makefile creation
+cat $makefile_top |\
+  sed -e s,@REPS@,"$reps", |\
+tee > $triplibs_dir/Makefile
 
 # cycle on the replicates
 for rep in $reps; do

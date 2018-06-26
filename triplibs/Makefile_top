@@ -1,0 +1,9 @@
+reps = @REPS@
+
+all : $(reps)
+
+$(reps) : force_look
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+force_look :
+	@true

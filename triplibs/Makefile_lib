@@ -48,7 +48,6 @@ starcode=starcode -t4
 seeq=seeq
 extract_reads_from_fastq=sed -n '2~4p'
 extract_bcd=grep -o '^.\{20\}'
-make_libs_statistics = $(hpip_root)/hpipline/triplibs/make_libs_statistics.py
 collect_integrations = $(hpip_root)/hpipline/triplibs/collect_integrations.py
 
 .PHONY : all spikes clean cleanintermediate cleanlog

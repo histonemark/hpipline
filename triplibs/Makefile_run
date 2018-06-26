@@ -9,7 +9,7 @@ sample_sheet = $(raw_datadir)/SampleSheet.csv
 all : $(stats)
 
 $(stats) : $(sample_sheet)
-	bcl2fastq -R $(raw_datadir) -o . --no-lane-splitting --sample-sheet $<
+	bcl2fastq -R $(raw_datadir) -o . --no-lane-splitting --sample-sheet $< 2> bcl2fastq.log
 
 # clean targets
 .PHONY : clean
@@ -17,4 +17,3 @@ $(stats) : $(sample_sheet)
 clean :
 	rm -rf Stats Reports \
 	  *.fastq.gz \
-	  $(sample_sheet)
