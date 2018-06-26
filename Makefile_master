@@ -1,0 +1,23 @@
+# general variables
+hpip_root = @HPIP_ROOT@
+
+# main target: the file containing all the integrations
+hpip_integrations = hpip-integrations.txt
+
+# program names
+gather_integrations = $(hpip_root)/hpipline/gather_integrations.py
+
+# all: the main target
+all : $(hpip_integrations)
+
+$(hpip_integrations) : triplibs pbd
+	echo "python $(gather_integrations)" > $@
+
+triplibs : pbd force_look
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+pbd : force_look
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+force_look :
+	@true
