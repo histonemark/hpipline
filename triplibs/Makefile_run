@@ -4,18 +4,12 @@ rep=@REP@
 
 stats = Stats/Stats.json
 raw_datadir = $(hpip_root)/data/raw/$(run)/HPIP_$(run)_$(rep)
-sample_sheet = SampleSheet.csv
-make_new_sample_sheet = $(hpip_root)/hpipline/triplibs/make_new_sample_sheet.py
-idx_starcoded = $(hpip_root)/data/triplibs/$(rep)/$(run)_noDNA/idx_starcoded.txt
+sample_sheet = $(raw_datadir)/SampleSheet.csv
 
 all : $(stats)
 
-$(stats) : $(sample_sheet) $(idx_starcoded)
+$(stats) : $(sample_sheet)
 	bcl2fastq -R $(raw_datadir) -o . --no-lane-splitting --sample-sheet $<
-
-$(sample_sheet) : $(make_new_sample_sheet)
-	echo "Making $(run) sample sheet"
-	@python $(make_new_sample_sheet) $(hpip_root) $(rep) $(run) > sample_sheet.log
 
 # clean targets
 .PHONY : clean

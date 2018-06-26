@@ -4,7 +4,6 @@ rep = @REP@
 
 # targets
 runs = cDNA gDNA iPCR
-noDNA = $(addsuffix _noDNA, $(runs))
 libs_stats = $(addsuffix .stats, $(join $(addsuffix /, $(libs)), $(libs)))
 libs_statistics = libs_statistics.txt
 force_look = force_look
@@ -14,10 +13,7 @@ all : $(libs) $(libs_statistics)
 $(libs) : $(runs) $(force_look)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
-$(runs) : $(noDNA) $(force_look)
-	$(MAKE) -C $@ $(MAKECMDGOALS)
-
-$(noDNA) : $(force_look)
+$(runs) : $(force_look)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
 force_look :
