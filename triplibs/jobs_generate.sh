@@ -64,11 +64,7 @@ for rep in $reps; do
 
   # cycle on the libraries
   for lib in $libs; do
-    if [ "$lib" != "undetermined" ] && [ "$lib" != "alltogether" ]; then
-      libname="lib$lib"
-    else
-      libname=$lib
-    fi
+    libname="lib$lib"
 
     # the directory associated to the library
     lib_dir="$rep_dir/$libname"
