@@ -36,7 +36,7 @@ pbd = ht.PBD(hpip_root)
 
 # now we process the mapped file
 ht.log_message(prog_name, 'Processing mapped file')
-mapped, N, nmapped = ht.parse_mapped(iPCR_sam_fname)
+mapped, nmulti, nmapped, nunmapped = ht.parse_mapped(iPCR_sam_fname)
 
 # open the output file
 with open('%s/%s-integrations.txt'%(datadir, lib), 'w') as f :

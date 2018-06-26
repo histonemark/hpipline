@@ -10,14 +10,31 @@ def parse_bcd(line) :
     that are in that library.
     """
 
-    bcd, all_candidates = line.strip().split('\t')
+    # init the dictionary with the barcode information
     d = {}
+
+    # the barcode name is separate from the candidate promoters by a tab. We
+    # split the line with a tabulation characters, and get a string that
+    # contains all the candidate promoters, with their probabilities
+    bcd, all_candidates = line.strip().split('\t')
+
+    # the "all_candidates" string is separate by a semi-colon into promoters
+    # that have the same library index
     for candidates in all_candidates.split(';') :
+
+        # we init a list of promoters in that library
         proms_in_lib = []
+
+        # the promoters in the library are separate by a comma
         for candidate in candidates.split(',') :
+
+            # finally, the promoters and the probabilities are separate by a
+            # comma
             prom_name, p = candidate.split(':')
             prom_class, prom_lib = prom_id(prom_name)
             proms_in_lib.append((prom_class, p))
+
+        # we fill in the entry of the dictionary
         d[int(prom_lib)] = proms_in_lib
     return d
 
@@ -107,14 +124,15 @@ def parse_mapped(mapped_fname) :
     # to the same or to different integration sites
     counts = {}
 
-    # init number of mapped integrations
+    # init number of mapped and unmapped integrations
     nmapped = 0
+    nunmapped = 0
 
     # open file
     with open(mapped_fname) as f:
 
         # iterate over all lines of the file
-        for N, line in enumerate(f):
+        for line in f :
 
             # skip the first lines that start with @
             if line[0] == '@':
@@ -127,7 +145,12 @@ def parse_mapped(mapped_fname) :
             # if the 'chrom' field (the third in the mapped file) is an
             # asterisk, then it means that bwa was not able to find a mapping
             # for the integration, and we skip this integration
-            if chrom != '*':
+            if chrom == '*':
+
+                nunmapped += 1
+                continue
+
+            else :
 
                 # increment the number of mapped reads
                 nmapped += 1
@@ -169,6 +192,7 @@ def parse_mapped(mapped_fname) :
 
     # we go through the whole integration list and calculate the distance
     # between the integration sites
+    nmulti = 0
     for bcd, hist in counts.items():
 
         # we only take into consideration the integrations that have a number of
@@ -181,10 +205,12 @@ def parse_mapped(mapped_fname) :
         # insertion sites differs more than ten nucleotides (or worse: they are
         # in different chromosomes)
         if dist(top) > 10:
+            nmulti += total
             continue
 
-        # HERE
+        # set the entry of the final dictionary as the one corresponding to the
+        # integration that has the highest number of reads
         ins = max(hist, key=hist.get)
         mapped[bcd] = (ins, total)
 
-    return mapped, N, nmapped
+    return mapped, nmulti, nmapped, nunmapped

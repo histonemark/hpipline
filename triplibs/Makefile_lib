@@ -141,5 +141,6 @@ $(lib_stats) : $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
 ####################################
 # COLLECT INTEGRATIONS
 ####################################
-$(lib_integrations) : $(iPCR_sam) $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
+$(lib_integrations) : $(collect_integrations) \
+  $(iPCR_sam) $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
 	python $(collect_integrations) $(hpip_root) $(rep) lib$(lib)
