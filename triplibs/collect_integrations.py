@@ -38,6 +38,13 @@ pbd = ht.PBD(hpip_root)
 ht.log_message(prog_name, 'Processing mapped file')
 mapped, nmulti, nmapped, nunmapped = ht.parse_mapped(iPCR_sam_fname)
 
+# init numbers that will allow to make statistics of the integrations
+n_in_cDNA = 0
+n_in_gDNA = 0
+n_in_both = 0
+n_in_pbd = 0
+n_in_pbd_lib = 0
+
 # open the output file
 with open('%s/%s-integrations.txt'%(datadir, lib), 'w') as f :
 
@@ -56,11 +63,17 @@ with open('%s/%s-integrations.txt'%(datadir, lib), 'w') as f :
         # association table
         pr = pbd.findbcd(bcd)
         in_pbd = pr is not None
+
+        # do statistics
+        if in_cDNA : n_in_cDNA += 1
+        if in_gDNA : n_in_gDNA += 1
+        if in_both : n_in_both += 1
+        if in_pbd : n_in_pbd += 1
         
         # proceed with the calculations only if the three conditions
         # are met: the mapped insertion is in the cDNA, in the gDNA, 
         # and in the pbd.
-        if in_cDNA and in_gDNA and in_pbd :
+        if in_both and in_pbd :
             
             # get the list of promoters associated to the
             # barcode from the pbd
@@ -73,6 +86,10 @@ with open('%s/%s-integrations.txt'%(datadir, lib), 'w') as f :
             # know which promoter it is associated to
             if not in_pbd_lib :
                 continue
+
+            # increment counter that tells us the number of integrations that in
+            # the end will enter in the integration table
+            if in_pbd_lib : n_in_pbd_lib += 1
 
             # if we are here, everything is fine and we prepare the string
             # that we output to our final file. First, we prepare a string
@@ -93,3 +110,11 @@ with open('%s/%s-integrations.txt'%(datadir, lib), 'w') as f :
             line += prom_string
             line += '\n'
             f.write(line)
+
+# write statistics of the library
+with open('%s/%s.stats'%(datadir, lib), 'w') as f :
+    f.write("%s %d %d %d %d %d %d %d %d %d %d\n"%(lib, nmapped, nunmapped, nmulti,
+                                               len(iPCR_canonicals),
+                                               len(mapped),
+                                         n_in_cDNA, n_in_gDNA, n_in_both,
+                             n_in_pbd, n_in_pbd_lib))

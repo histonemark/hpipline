@@ -58,7 +58,7 @@ ifeq ($(lib),undetermined)
   iPCR_name = /Undetermined
   cDNA_name = /Undetermined
   gDNA_name = /Undetermined
-  lib_stats = undetermined.stats
+  lib_stats = 
   lib_integrations =
 else
   iPCR_name=/iPCR$(lib)
@@ -134,13 +134,9 @@ $(iPCR_starcode) : $(iPCR_sam)
 	  $(seeq) -rd2 $(SPIKE) |\
 	  $(starcode) -d2 1> $@ 2> $(subst .txt,.log,$@)
 
-$(lib_stats) : $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
-	python $(make_libs_statistics) $^ $@
-
-
 ####################################
 # COLLECT INTEGRATIONS
 ####################################
-$(lib_integrations) : $(collect_integrations) \
+$(lib_integrations) $(lib_stats): $(collect_integrations) \
   $(iPCR_sam) $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
 	python $(collect_integrations) $(hpip_root) $(rep) lib$(lib)
