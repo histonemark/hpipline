@@ -25,7 +25,6 @@ done
 makefile_top=$hpipline_dir/Makefile_top
 makefile_rep=$hpipline_dir/Makefile_rep
 makefile_lib=$hpipline_dir/Makefile_lib
-makefile_noDNA=$hpipline_dir/Makefile_noDNA
 makefile_run=$hpipline_dir/Makefile_run
 
 # top-level Makefile creation
@@ -47,21 +46,10 @@ for rep in $reps; do
     sed -e s,@libs@,"$libnames",g |\
   tee > $rep_dir/Makefile
 
-  # create "noDNA" runs and regular runs
+  # create runs
   for run in $runs; do
 
-    # the directory associated to the noDNA run
-    noDNA_run_dir="$triplibs_dir/$rep/$run"_noDNA
-    mkdir -p $noDNA_run_dir
-
-    # noDNA Makefile creation
-    cat $makefile_noDNA |\
-      sed -e s,@HPIP_ROOT@,$hpip_root,g |\
-      sed -e s,@RUN@,$run, |\
-      sed -e s,@REP@,$rep, |\
-    tee > $noDNA_run_dir/Makefile
-
-    # the directory associated to the regular run
+    # the directory associated to the run
     run_dir="$triplibs_dir/$rep/$run"
     mkdir -p $run_dir
 
