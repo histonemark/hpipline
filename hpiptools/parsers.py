@@ -1,16 +1,24 @@
 import gzip
+from .utils import prom_id
 
 def parse_bcd(line) :
     """
     Parses a line of the pbd and returns a dictionary of candidate promoters,
-    with their probabilities
+    with their probabilities. For the purpose of the operations that will be
+    done later with this information, it is useful to return a dictionary that
+    has as keys the promoter library index, and as values a list of promoters
+    that are in that library.
     """
-    bcd,all_candidates = line.strip().split('\t')
+
+    bcd, all_candidates = line.strip().split('\t')
     d = {}
     for candidates in all_candidates.split(';') :
+        proms_in_lib = []
         for candidate in candidates.split(',') :
-            prom_name,p = candidate.split(':')
-            d[prom_name] = p
+            prom_name, p = candidate.split(':')
+            prom_class, prom_lib = prom_id(prom_name)
+            proms_in_lib.append((prom_class, p))
+        d[int(prom_lib)] = proms_in_lib
     return d
 
 def parse_fastq(fastq_fname) :
@@ -81,7 +89,7 @@ def parse_starcode(starcode_fname, inverse=False) :
                     canonical[bcd] = can
 
             # fill in the 'counts' dictionary
-            counts[can] = cnts
+            counts[can] = int(cnts)
 
     return canonical, counts
 
@@ -99,6 +107,10 @@ def parse_mapped(mapped_fname) :
 
     # init the dictionary that will contain all the info
     mapped = {}
+
+    # init the dictionary that will allow us to say whether many reads pertain
+    # to the same or to different integration sites
+    counts = {}
 
     # init number of mapped integrations
     nmapped = 0
@@ -129,10 +141,55 @@ def parse_mapped(mapped_fname) :
                 strand = '-' if int(flag) & ISREV else '+'
                 pos = int(pos)
 
-                # fill the dictionary with the information
+                # let's see whether the barcode was already found in the mapping
+                # file. In this case, we add a one to the counts dictionary
                 ident = (chrom, pos, strand)
-                if not mapped.has_key(bcd) :
-                    mapped[bcd] = [ident]
-                else :
-                    mapped[bcd].append(ident)
+                if not counts.has_key(bcd) : 
+                    counts[bcd] = {}
+                if not counts[bcd].has_key(ident) :
+                    counts[bcd][ident] = 0
+                counts[bcd][ident] += 1
+
+    # when the parsing of the file is finished, we now analyze the results and
+    # establish which is the "true" integration site of the barcode
+
+    # this is a function that evaluates what is the distance between the
+    # integration sites passed to it
+    def dist(intlist):
+
+        # first, we sort the integration list
+        intlist.sort()
+
+        # then we assess whether the chromosomes of the first and last
+        # integrations in the list are the same. If so, we return "infinite"
+        # distance. This works because the integration list is sorted.
+        try:
+            chrom_first, pos_first, _ = intlist[0]
+            chrom_last,  pos_last, _  = intlist[-1]
+            if chrom_first != chrom_last:
+                return float('inf')
+            return pos_last - pos_first
+        except IndexError:
+            return float('inf')
+
+    # we go through the whole integration list and calculate the distance
+    # between the integration sites
+    for bcd, hist in counts.items():
+
+        # we only take into consideration the integrations that have a number of
+        # counts that is at least 10% of the total number of counts
+        total = sum(hist.values())
+        top = [loc for loc, count in hist.items()
+               if count > max(1, 0.1*total)]
+
+        # Skip barcode if the distance between the integration sites of the top
+        # insertion sites differs more than ten nucleotides (or worse: they are
+        # in different chromosomes)
+        if dist(top) > 10:
+            continue
+
+        # HERE
+        ins = max(hist, key=hist.get)
+        mapped[bcd] = (ins, total)
+
     return mapped, N, nmapped
