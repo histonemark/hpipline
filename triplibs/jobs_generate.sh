@@ -86,6 +86,7 @@ for rep in $reps; do
     # library-level Makefile creation
     cat $makefile_lib |\
       sed -e s,@HPIP_ROOT@,$hpip_root,g |\
+      sed -e s,@REP@,$rep,g |\
       sed -e s,@LIB@,$lib,g |\
       sed -e s,@GENOME@,$genome,g |\
     tee > $rep_dir/$libname/Makefile

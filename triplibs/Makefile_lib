@@ -4,6 +4,7 @@ SHELL:=/bin/bash
 SPIKE=CATGATTACCCTGTTATC
 
 # input files
+rep=@REP@
 lib=@LIB@
 hpip_root=@HPIP_ROOT@
 prom_bcd_dict=$(hpip_root)/pbd/pbd.txt
@@ -15,7 +16,6 @@ iPCR_rev=iPCR-rev.fastq.gz
 cDNA_fastq=cDNA.fastq.gz
 gDNA_fastq=gDNA.fastq.gz
 iPCR_starcode=iPCR-starcode.txt
-iPCR_counts_dict=iPCR-counts_dict.p
 iPCR_sam=iPCR.sam
 cDNA_starcode=cDNA-starcode.txt
 cDNA_spikes_starcode=cDNA-spikes_starcode.txt
@@ -49,6 +49,7 @@ seeq=seeq
 extract_reads_from_fastq=sed -n '2~4p'
 extract_bcd=grep -o '^.\{20\}'
 make_libs_statistics = $(hpip_root)/hpipline/triplibs/make_libs_statistics.py
+collect_integrations = $(hpip_root)/hpipline/triplibs/collect_integrations.py
 
 .PHONY : all spikes clean cleanintermediate cleanlog
 
@@ -58,19 +59,16 @@ ifeq ($(lib),undetermined)
   cDNA_name = /Undetermined
   gDNA_name = /Undetermined
   lib_stats = undetermined.stats
-else ifeq ($(lib),alltogether)
-  iPCR_name = _noDNA/Undetermined
-  cDNA_name = _noDNA/Undetermined
-  gDNA_name = _noDNA/Undetermined
-  lib_stats = alltogether.stats
+  lib_integrations =
 else
   iPCR_name=/iPCR$(lib)
   cDNA_name=/cDNA$(lib)
   gDNA_name=/gDNA$(lib)
   lib_stats = lib$(lib).stats
+  lib_integrations = lib$(lib)-integrations.txt
 endif
 
-all : $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode) $(lib_stats)
+all : $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode) $(lib_stats) $(lib_integrations)
 
 spikes : $(cDNA_spikes_starcode) $(gDNA_spikes_starcode)
 
@@ -138,3 +136,10 @@ $(iPCR_starcode) : $(iPCR_sam)
 
 $(lib_stats) : $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
 	python $(make_libs_statistics) $^ $@
+
+
+####################################
+# COLLECT INTEGRATIONS
+####################################
+$(lib_integrations) : $(iPCR_sam) $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
+	python $(collect_integrations) $(hpip_root) $(rep) lib$(lib)
