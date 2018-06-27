@@ -28,7 +28,7 @@ all : $(promoters_starcoded)
 $(promoters_fastq) : $(stats_file)
 
 $(stats_file) : $(sample_sheet)
-	bcl2fastq -R $(raw_datadir) -o . --no-lane-splitting
+	bcl2fastq -R $(raw_datadir) -o . --no-lane-splitting > bcl2fastq.log
 	bash $(hpip_root)/hpipline/pbd/fix_fastq_fnames.sh
 
 # CLEAN

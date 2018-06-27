@@ -11,7 +11,7 @@ gather_integrations = $(hpip_root)/hpipline/gather_integrations.py
 all : $(hpip_integrations)
 
 $(hpip_integrations) : triplibs pbd
-	echo "python $(gather_integrations)" > $@
+	python $(gather_integrations) $(hpip_root)
 
 triplibs : pbd force_look
 	$(MAKE) -C $@ $(MAKECMDGOALS)
