@@ -22,5 +22,5 @@ force_look :
 $(libs_stats) : $(libs)
 
 $(libs_statistics) : $(libs_stats)
-	echo "# mapped unmapped multi iPCR in_cDNA in_gDNA in_both in_pbd in_pbd_lib" > $@
+	echo -e "# mapped unmapped multi iPCR in_cDNA in_gDNA in_both in_pbd in_pbd_lib" > $@
 	cat $(libs_stats) >> $@

@@ -113,7 +113,7 @@ with open('%s/%s-integrations.txt'%(datadir, lib), 'w') as f :
 
 # write statistics of the library
 with open('%s/%s.stats'%(datadir, lib), 'w') as f :
-    f.write("%s %d %d %d %d %d %d %d %d %d %d\n"%(lib, nmapped, nunmapped, nmulti,
+    f.write("%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n"%(lib, nmapped, nunmapped, nmulti,
                                                len(iPCR_canonicals),
                                                len(mapped),
                                          n_in_cDNA, n_in_gDNA, n_in_both,
