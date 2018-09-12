@@ -4,8 +4,12 @@ hpip_root = @HPIP_ROOT@
 # force_look
 force_look = force_look
 
-# the main target is the promoter-barcode dictionary (pbd)
+# the main target is the promoter-barcode dictionary (pbd) and its index
 pbd = pbd.txt
+pbd_idx = pbd.txt.idx
+
+# statistics
+pbd_stats = pbd_counts.tsv pbd_collisions.tsv
 
 # intermediate targets: the starcoded promoters
 libs_dir = pbd_libs
@@ -21,8 +25,9 @@ libs = $(libs_dir)/HPIP_bcds_A1toA12 \
 # generate promoter-barcode dictionary script and log
 generate_pbd = @HPIP_ROOT@/hpipline/pbd/generate_pbd.py
 make_pbd_idx = @HPIP_ROOT@/hpipline/pbd/make_pbd_idx.py
+pbd_statistics = @HPIP_ROOT@/hpipline/pbd/pbd_statistics.py
 
-all : $(pbd) $(pbd_idx)
+all : $(pbd) $(pbd_idx) $(pbd_stats)
 
 $(pbd) :  $(libs) $(generate_pbd)
 	python $(generate_pbd) $(hpip_root)
@@ -31,6 +36,9 @@ $(pbd) :  $(libs) $(generate_pbd)
 
 $(pbd_idx) : $(pbd) $(make_pbd_idx)
 	python $(make_pbd_idx) $(pbd) $@
+
+$(pbd_stats) : $(pbd)
+	python $(pbd_statistics) $(hpip_root)
 
 $(libs) : $(force_look)
 	$(MAKE) -C $@ $(MAKECMDGOALS)

@@ -7,7 +7,8 @@ SPIKE=CATGATTACCCTGTTATC
 rep=@REP@
 lib=@LIB@
 hpip_root=@HPIP_ROOT@
-prom_bcd_dict=$(hpip_root)/pbd/pbd.txt
+pbd=$(hpip_root)/data/pbd/pbd.txt
+pbd_idx=$(pbd).idx
 genome=@GENOME@
 
 # intermediate files
@@ -136,6 +137,6 @@ $(iPCR_starcode) : $(iPCR_sam)
 ####################################
 # COLLECT INTEGRATIONS
 ####################################
-$(lib_integrations) $(lib_stats): $(collect_integrations) \
+$(lib_integrations) $(lib_stats): $(collect_integrations) $(pbd) $(pbd_idx)\
   $(iPCR_sam) $(iPCR_starcode) $(cDNA_starcode) $(gDNA_starcode)
 	python $(collect_integrations) $(hpip_root) $(rep) lib$(lib)
